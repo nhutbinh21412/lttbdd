@@ -4,7 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="#F5F5F5">
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
@@ -25,7 +26,15 @@
                 android:text="Tên môn học"
                 android:textSize="24sp"
                 android:textStyle="bold"
-                android:textColor="@color/black"/>
+                android:textColor="#1A237E"/>
+
+            <TextView
+                android:id="@+id/detailClassCode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mã lớp: 24DHTT03"
+                android:textSize="14sp"
+                android:textColor="#757575"/>
 
             <View
                 android:layout_width="match_parent"
@@ -33,16 +42,37 @@
                 android:background="#DDDDDD"
                 android:layout_marginVertical="12dp"/>
 
-            <TextView android:id="@+id/detailRoom" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Phòng học: " android:textSize="16sp" android:layout_marginBottom="8dp"/>
-            <TextView android:id="@+id/detailTime" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Thời gian: " android:textSize="16sp" android:layout_marginBottom="8dp"/>
-            <TextView android:id="@+id/detailTeacher" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Giảng viên: " android:textSize="16sp"/>
+            <TextView android:id="@+id/detailDay" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Thứ: " android:textSize="16sp" android:layout_marginBottom="8dp" android:textColor="#424242"/>
+            <TextView android:id="@+id/detailLesson" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Tiết học: " android:textSize="16sp" android:layout_marginBottom="8dp" android:textColor="#424242"/>
+            <TextView android:id="@+id/detailTime" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Giờ học: " android:textSize="16sp" android:layout_marginBottom="8dp" android:textColor="#424242"/>
+            <TextView android:id="@+id/detailRoom" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Phòng học: " android:textSize="16sp" android:layout_marginBottom="8dp" android:textStyle="bold" android:textColor="#D32F2F"/>
+            <TextView android:id="@+id/detailTeacher" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Giảng viên: " android:textSize="16sp" android:textColor="#424242"/>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <Button
-        android:id="@+id/btnBack"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Quay lại"
-        android:layout_marginTop="24dp"/>
+        android:orientation="horizontal"
+        android:layout_marginTop="24dp">
+
+        <Button
+            android:id="@+id/btnBack"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Quay lại"
+            android:backgroundTint="#757575"
+            android:textColor="@android:color/white"/>
+
+        <Button
+            android:id="@+id/btnEdit"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Chỉnh sửa"
+            android:backgroundTint="#1A237E"
+            android:textColor="@android:color/white"
+            android:layout_marginStart="8dp"/>
+    </LinearLayout>
 </LinearLayout>

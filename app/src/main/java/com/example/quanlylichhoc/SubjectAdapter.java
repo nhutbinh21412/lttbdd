@@ -32,7 +32,15 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Subject subject = subjectList.get(position);
         holder.txtName.setText(subject.getName());
-        holder.txtInfo.setText("Phòng: " + subject.getRoom() + " | " + subject.getTime());
+        holder.txtClassCode.setText(subject.getClassCode() + " - " + subject.getId());
+        holder.txtLessonTime.setText("Tiết: " + subject.getLesson() + " | Giờ: " + subject.getTime());
+        holder.txtRoom.setText("Phòng: " + subject.getRoom());
+        holder.txtTeacher.setText("GV: " + subject.getTeacher());
+        holder.txtDay.setText(subject.getDayOfWeek());
+        
+        // Đặt màu cho vạch bên trái
+        holder.viewColorTag.setBackgroundColor(subject.getColor());
+
         holder.itemView.setOnClickListener(v -> listener.onItemClick(subject));
     }
 
@@ -40,11 +48,18 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
     public int getItemCount() { return subjectList.size(); }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView txtName, txtInfo;
+        TextView txtName, txtClassCode, txtLessonTime, txtRoom, txtTeacher, txtDay;
+        View viewColorTag;
+
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             txtName = itemView.findViewById(R.id.txtSubjectName);
-            txtInfo = itemView.findViewById(R.id.txtSubjectInfo);
+            txtClassCode = itemView.findViewById(R.id.txtClassCode);
+            txtLessonTime = itemView.findViewById(R.id.txtLessonTime);
+            txtRoom = itemView.findViewById(R.id.txtRoom);
+            txtTeacher = itemView.findViewById(R.id.txtTeacher);
+            txtDay = itemView.findViewById(R.id.txtDay);
+            viewColorTag = itemView.findViewById(R.id.viewColorTag);
         }
     }
 }
