@@ -38,7 +38,8 @@ public class AddSubjectActivity extends AppCompatActivity {
         Button btnSave = findViewById(R.id.btnSave);
         Button btnDelete = findViewById(R.id.btnDelete);
 
-        // Thiết lập Spinner Thứ
+
+        // Thiết lập Spinner
         String[] days = {"Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ nhật"};
         ArrayAdapter<String> dayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, days);
         dayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);

@@ -14,6 +14,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Khởi tạo DataManager với Context để lưu file
+        DataManager.init(this);
+
         // Khởi tạo các thành phần đúng ID đã khai báo trong XML
         CardView cardViewSchedule = findViewById(R.id.cardViewSchedule);
         CardView cardViewAdd = findViewById(R.id.cardViewAdd);
