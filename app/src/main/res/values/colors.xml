@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="black">#212121</color>
+    <color name="white">#FFFFFF</color>
+    <color name="primaryColor">#0D47A1</color>
+    <color name="primaryLight">#1976D2</color>
+    <color name="backgroundColor">#F5F7FA</color>
+    <color name="textPrimary">#212121</color>
+    <color name="textGray">#757575</color>
+
+    <!-- Ultra Sharp Icon Colors -->
+    <color name="blue_icon">#1E88E5</color>
+    <color name="teal_icon">#00897B</color>
+    <color name="orange_icon">#F4511E</color>
+    <color name="green_icon">#43A047</color>
+    <color name="red_icon">#E53935</color>
+    <color name="purple_icon">#8E24AA</color>
 </resources>

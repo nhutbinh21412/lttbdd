@@ -2,9 +2,13 @@ package com.example.quanlylichhoc;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import java.util.List;
 
 public class SubjectDetailActivity extends AppCompatActivity {
     
@@ -41,6 +45,64 @@ public class SubjectDetailActivity extends AppCompatActivity {
                 Intent intent = new Intent(this, AddSubjectActivity.class);
                 intent.putExtra("EDIT_SUBJECT", currentSubject);
                 startActivity(intent);
+            }
+        });
+
+        // Nút Điểm danh
+        Button btnAttendance = new Button(this);
+        btnAttendance.setText("Điểm danh / Xem điểm danh");
+        btnAttendance.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#4CAF50")));
+        btnAttendance.setTextColor(android.graphics.Color.WHITE);
+        ((android.widget.LinearLayout)txtName.getParent()).addView(btnAttendance);
+        
+        btnAttendance.setOnClickListener(v -> {
+            Intent intent = new Intent(this, AttendanceActivity.class);
+            intent.putExtra("SUBJECT_ID", subjectId);
+            startActivity(intent);
+        });
+        
+        // Phân quyền: Sinh viên có thể xem điểm danh, Giảng viên có thể thực hiện điểm danh
+        // Hiện tại nút này được thêm vào layout cho cả hai vai trò.
+
+        // Hiển thị danh sách sinh viên đăng ký nếu là Teacher
+        android.content.SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String role = prefs.getString("role", "Student");
+        if (role.equalsIgnoreCase("Teacher") || role.equalsIgnoreCase("Lecturer")) {
+            loadRegisteredStudents(subjectId);
+        }
+    }
+
+    private void loadRegisteredStudents(String subjectId) {
+        LinearLayout layout = (LinearLayout) txtName.getParent();
+        
+        TextView tvLabel = new TextView(this);
+        tvLabel.setText("\nDanh sách sinh viên đăng ký:");
+        tvLabel.setTypeface(null, android.graphics.Typeface.BOLD);
+        tvLabel.setTextColor(android.graphics.Color.BLACK);
+        layout.addView(tvLabel);
+
+        DataManager.getInstance().loadStudentsForSubject(subjectId, new DataManager.AttendanceCallback() {
+            @Override
+            public void onSuccess(List<AttendanceModel> list) {
+                runOnUiThread(() -> {
+                    if (list.isEmpty()) {
+                        TextView tvEmpty = new TextView(SubjectDetailActivity.this);
+                        tvEmpty.setText("Chưa có sinh viên đăng ký.");
+                        layout.addView(tvEmpty);
+                    } else {
+                        for (AttendanceModel student : list) {
+                            TextView tvStudent = new TextView(SubjectDetailActivity.this);
+                            tvStudent.setText("• " + student.getStudentName());
+                            tvStudent.setPadding(20, 5, 0, 5);
+                            layout.addView(tvStudent);
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                runOnUiThread(() -> Toast.makeText(SubjectDetailActivity.this, "Lỗi tải SV: " + error, Toast.LENGTH_SHORT).show());
             }
         });
     }

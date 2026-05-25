@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="12dp"
+    android:layout_marginVertical="6dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/txtStudentName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tên sinh viên"
+            android:textColor="@color/textPrimary"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtAttendanceStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="4dp"
+            android:background="@drawable/circle_background"
+            android:backgroundTint="#F5F5F5"
+            android:text="Trạng thái: Có mặt"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <RadioGroup
+            android:id="@+id/rgStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
+            android:weightSum="3">
+
+            <RadioButton
+                android:id="@+id/rbPresent"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:buttonTint="@color/green_icon"
+                android:checked="true"
+                android:text="Có mặt"
+                android:textSize="14sp"
+                android:paddingStart="4dp"/>
+
+            <RadioButton
+                android:id="@+id/rbAbsent"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:buttonTint="@color/red_icon"
+                android:text="Vắng"
+                android:textSize="14sp"
+                android:paddingStart="4dp"/>
+
+            <RadioButton
+                android:id="@+id/rbExcused"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:buttonTint="@color/orange_icon"
+                android:text="Vắng Có phép"
+                android:textSize="14sp"
+                android:paddingStart="4dp"/>
+        </RadioGroup>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

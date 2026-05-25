@@ -45,7 +45,38 @@ public class SubjectListActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Làm mới danh sách khi quay lại từ AddSubjectActivity
-        adapter.notifyDataSetChanged();
+        // Tải dữ liệu từ SQL Server mỗi khi vào màn hình này
+        DataManager.getInstance().loadData(new DataManager.DataCallback() {
+            @Override
+            public void onDataLoaded(List<Subject> subjects) {
+                runOnUiThread(() -> {
+                    // Lấy thông tin quyền và ID người dùng
+                    android.content.SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+                    String role = prefs.getString("role", "Student");
+                    int currentUserId = prefs.getInt("userId", -1);
+
+                    subjectList.clear();
+                    
+                    if (role.equals("Teacher")) {
+                        // Nếu là Giảng viên, chỉ hiện môn học do mình quản lý
+                        for (Subject s : subjects) {
+                            if (s.getTeacherId() == currentUserId) {
+                                subjectList.add(s);
+                            }
+                        }
+                    } else {
+                        // Nếu là Admin hoặc Sinh viên, hiện tất cả
+                        subjectList.addAll(subjects);
+                    }
+
+                    adapter.notifyDataSetChanged();
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                // Có thể hiển thị thông báo lỗi nếu cần
+            }
+        });
     }
 }

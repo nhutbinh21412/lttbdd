@@ -15,10 +15,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class AddSubjectActivity extends AppCompatActivity {
 
-    private EditText editName, editClassCode, editLesson, editTime, editRoom, editTeacher;
-    private Spinner spinnerDay, spinnerType;
+    private EditText editName, editClassCode, editRoom;
+    private TextView txtTeacherName;
+    private Spinner spinnerDay, spinnerType, spinnerLesson, spinnerTime;
     private Subject existingSubject;
     private boolean isEditMode = false;
+    private String currentUserName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,21 +31,51 @@ public class AddSubjectActivity extends AppCompatActivity {
         TextView txtTitle = findViewById(R.id.txtAddTitle);
         editName = findViewById(R.id.editName);
         editClassCode = findViewById(R.id.editClassCode);
-        editLesson = findViewById(R.id.editLesson);
-        editTime = findViewById(R.id.editTime);
+        spinnerLesson = findViewById(R.id.spinnerLesson);
+        spinnerTime = findViewById(R.id.spinnerTime);
         editRoom = findViewById(R.id.editRoom);
-        editTeacher = findViewById(R.id.editTeacher);
+        txtTeacherName = findViewById(R.id.txtTeacherName);
         spinnerDay = findViewById(R.id.spinnerDay);
         spinnerType = findViewById(R.id.spinnerType);
         Button btnSave = findViewById(R.id.btnSave);
         Button btnDelete = findViewById(R.id.btnDelete);
 
+        // Kiểm tra quyền
+        android.content.SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String userRole = prefs.getString("role", "Student");
+        currentUserName = prefs.getString("fullName", "Unknown");
+        txtTeacherName.setText("Giảng viên: " + currentUserName);
 
-        // Thiết lập Spinner
+        if (userRole.equals("Student")) {
+            btnSave.setVisibility(View.GONE);
+            btnDelete.setVisibility(View.GONE);
+            // Vô hiệu hóa các ô nhập liệu
+            editName.setEnabled(false);
+            editClassCode.setEnabled(false);
+            spinnerLesson.setEnabled(false);
+            spinnerTime.setEnabled(false);
+            editRoom.setEnabled(false);
+            spinnerDay.setEnabled(false);
+            spinnerType.setEnabled(false);
+        }
+
+        // Thiết lập Spinner Thứ
         String[] days = {"Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ nhật"};
         ArrayAdapter<String> dayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, days);
         dayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerDay.setAdapter(dayAdapter);
+
+        // Thiết lập Spinner Tiết học
+        String[] lessons = {"1-4", "5-9", "10-14"};
+        ArrayAdapter<String> lessonAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, lessons);
+        lessonAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerLesson.setAdapter(lessonAdapter);
+
+        // Thiết lập Spinner Giờ học
+        String[] times = {"7:00-10:35", "12:00-15:35", "16:25-20:00"};
+        ArrayAdapter<String> timeAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, times);
+        timeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerTime.setAdapter(timeAdapter);
 
         // Thiết lập Spinner Loại lịch
         String[] types = {"Lý thuyết", "Thực hành", "Trực tuyến", "Thi"};
@@ -62,15 +94,29 @@ public class AddSubjectActivity extends AppCompatActivity {
             // Đổ dữ liệu cũ vào các ô nhập
             editName.setText(existingSubject.getName());
             editClassCode.setText(existingSubject.getClassCode());
-            editLesson.setText(existingSubject.getLesson());
-            editTime.setText(existingSubject.getTime());
             editRoom.setText(existingSubject.getRoom());
-            editTeacher.setText(existingSubject.getTeacher());
+            txtTeacherName.setText("Giảng viên: " + existingSubject.getTeacher());
 
             // Chọn đúng Thứ trong Spinner
             for (int i = 0; i < days.length; i++) {
                 if (days[i].equals(existingSubject.getDayOfWeek())) {
                     spinnerDay.setSelection(i);
+                    break;
+                }
+            }
+
+            // Chọn đúng Tiết học
+            for (int i = 0; i < lessons.length; i++) {
+                if (lessons[i].equals(existingSubject.getLesson())) {
+                    spinnerLesson.setSelection(i);
+                    break;
+                }
+            }
+
+            // Chọn đúng Giờ học
+            for (int i = 0; i < times.length; i++) {
+                if (times[i].equals(existingSubject.getTime())) {
+                    spinnerTime.setSelection(i);
                     break;
                 }
             }
@@ -105,14 +151,14 @@ public class AddSubjectActivity extends AppCompatActivity {
         btnSave.setOnClickListener(v -> {
             String name = editName.getText().toString().trim();
             String classCode = editClassCode.getText().toString().trim();
-            String lesson = editLesson.getText().toString().trim();
-            String time = editTime.getText().toString().trim();
+            String lesson = spinnerLesson.getSelectedItem().toString();
+            String time = spinnerTime.getSelectedItem().toString();
             String room = editRoom.getText().toString().trim();
-            String teacher = editTeacher.getText().toString().trim();
+            String teacher = isEditMode ? existingSubject.getTeacher() : currentUserName;
             String day = spinnerDay.getSelectedItem().toString();
             String type = spinnerType.getSelectedItem().toString();
 
-            if (name.isEmpty() || classCode.isEmpty() || lesson.isEmpty() || time.isEmpty() || room.isEmpty()) {
+            if (name.isEmpty() || classCode.isEmpty() || room.isEmpty()) {
                 Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin!", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -130,7 +176,11 @@ public class AddSubjectActivity extends AppCompatActivity {
                     .setMessage(isEditMode ? "Cập nhật thay đổi?" : "Lưu môn học này?")
                     .setPositiveButton("Đồng ý", (dialog, which) -> {
                         String id = isEditMode ? existingSubject.getId() : String.valueOf(System.currentTimeMillis()).substring(7);
-                        Subject subject = new Subject(id, name, room, time, teacher, day, lesson, classCode, color);
+                        
+                        // Lấy ID người dùng hiện tại (Giảng viên)
+                        int currentUserId = prefs.getInt("userId", -1);
+                        
+                        Subject subject = new Subject(id, name, room, time, teacher, currentUserId, day, lesson, classCode, color);
                         
                         if (isEditMode) {
                             DataManager.getInstance().updateSubject(subject);

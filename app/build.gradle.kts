@@ -43,4 +43,5 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.ext.junit)
+    implementation("net.sourceforge.jtds:jtds:1.3.1")
 }

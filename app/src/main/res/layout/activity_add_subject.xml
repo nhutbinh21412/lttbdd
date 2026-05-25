@@ -26,6 +26,13 @@
             android:inputType="textCapWords"/>
 
         <EditText
+            android:id="@+id/editRoom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Phòng học (VD: G502)"
+            android:layout_marginTop="10dp"/>
+
+        <EditText
             android:id="@+id/editClassCode"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -44,34 +51,28 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
 
-            <EditText
-                android:id="@+id/editLesson"
+            <Spinner
+                android:id="@+id/spinnerLesson"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Tiết (VD: 1-4)"/>
+                android:layout_weight="1" />
         </LinearLayout>
 
-        <EditText
-            android:id="@+id/editTime"
+        <Spinner
+            android:id="@+id/spinnerTime"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Giờ học (VD: 07:00 - 10:35)"
             android:layout_marginTop="10dp"/>
 
-        <EditText
-            android:id="@+id/editRoom"
+        <TextView
+            android:id="@+id/txtTeacherName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Phòng học (VD: G502)"
-            android:layout_marginTop="10dp"/>
-
-        <EditText
-            android:id="@+id/editTeacher"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Tên giảng viên"
-            android:layout_marginTop="10dp"/>
+            android:text="Giảng viên: "
+            android:textSize="16sp"
+            android:layout_marginTop="10dp"
+            android:padding="8dp"
+            android:background="#F5F5F5"/>
 
         <TextView
             android:layout_width="wrap_content"

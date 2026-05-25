@@ -51,6 +51,13 @@ public class SearchActivity extends AppCompatActivity {
         btnSearchAction.setOnClickListener(v -> performSearch());
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Luôn làm mới dữ liệu từ SQL để tìm kiếm chính xác
+        DataManager.getInstance().loadData(null);
+    }
+
     private void performSearch() {
         String keyword = edtSearchSubject.getText().toString().trim().toLowerCase();
         List<Subject> allSubjects = DataManager.getInstance().getSubjectList();

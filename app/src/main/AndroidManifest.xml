@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -11,17 +14,29 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Quanlylichhoc"
-        tools:targetApi="31">
+        tools:targetApi="31"
+        android:usesCleartextTraffic="true">
 
         <activity
-            android:name=".MainActivity"
+            android:name=".AttendanceActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
+
+        <activity
+            android:name=".RegisterActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true" />
 
         <activity
             android:name=".SubjectListActivity"
@@ -34,7 +49,26 @@
         <activity
             android:name=".AddSubjectActivity"
             android:exported="false" />
-        <activity android:name=".SearchActivity" android:exported="false" />
+
+        <activity
+            android:name=".SearchActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ProfileActivity"
+            android:exported="true" />
+
+        <activity
+            android:name=".StudentInfoActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ChangePasswordActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".SubjectRegistrationActivity"
+            android:exported="false" />
 
     </application>
 

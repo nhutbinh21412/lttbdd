@@ -30,7 +30,7 @@
                 android:id="@+id/txtSubjectName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Lập trình Windows"
+                android:text=""
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="#1A237E" />
@@ -39,7 +39,7 @@
                 android:id="@+id/txtClassCode"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="24DHTT02 - 010100085302"
+                android:text=""
                 android:textSize="12sp"
                 android:textColor="#757575" />
 
@@ -47,7 +47,7 @@
                 android:id="@+id/txtLessonTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tiết: 1 - 4 | Giờ: 07:00 - 10:35"
+                android:text=""
                 android:textSize="13sp"
                 android:layout_marginTop="4dp"
                 android:textColor="#424242"/>
@@ -56,16 +56,16 @@
                 android:id="@+id/txtRoom"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Phòng: G502"
+                android:text="Phòng: "
+                android:textColor="#D32F2F"
                 android:textSize="13sp"
-                android:textStyle="bold"
-                android:textColor="#D32F2F" />
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/txtTeacher"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="GV: Hồ Ngọc Thanh"
+                android:text="GV: "
                 android:textSize="13sp"
                 android:layout_marginTop="2dp"
                 android:textColor="#616161" />
