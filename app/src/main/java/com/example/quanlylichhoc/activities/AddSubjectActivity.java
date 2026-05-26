@@ -139,14 +139,24 @@ public class AddSubjectActivity extends AppCompatActivity {
                     .setTitle("Xác nhận xóa")
                     .setMessage("Bạn có chắc chắn muốn xóa môn học này không?")
                     .setPositiveButton("Xóa", (dialog, which) -> {
-                        DataManager.getInstance().deleteSubject(existingSubject.getId());
-                        Toast.makeText(this, "Đã xóa môn học!", Toast.LENGTH_SHORT).show();
-                        
-                        // Quay lại màn hình danh sách (bỏ qua màn hình chi tiết vì môn đó đã bị xóa)
-                        Intent intent = new Intent(this, SubjectListActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                        startActivity(intent);
-                        finish();
+                        DataManager.getInstance().deleteSubject(existingSubject.getId(), new DataManager.SimpleCallback() {
+                            @Override
+                            public void onSuccess() {
+                                runOnUiThread(() -> {
+                                    Toast.makeText(AddSubjectActivity.this, "Đã xóa môn học!", Toast.LENGTH_SHORT).show();
+                                    // Quay lại màn hình danh sách
+                                    Intent intent = new Intent(AddSubjectActivity.this, SubjectListActivity.class);
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                    startActivity(intent);
+                                    finish();
+                                });
+                            }
+
+                            @Override
+                            public void onError(String error) {
+                                runOnUiThread(() -> Toast.makeText(AddSubjectActivity.this, "Lỗi khi xóa: " + error, Toast.LENGTH_SHORT).show());
+                            }
+                        });
                     })
                     .setNegativeButton("Hủy", null)
                     .show();
@@ -179,7 +189,15 @@ public class AddSubjectActivity extends AppCompatActivity {
                     .setTitle("Xác nhận")
                     .setMessage(isEditMode ? "Cập nhật thay đổi?" : "Lưu môn học này?")
                     .setPositiveButton("Đồng ý", (dialog, which) -> {
-                        String id = isEditMode ? existingSubject.getId() : String.valueOf(System.currentTimeMillis()).substring(7);
+                        btnSave.setEnabled(false); // Vô hiệu hóa nút để tránh nhấn đúp
+                        
+                        String id;
+                        if (isEditMode) {
+                            id = existingSubject.getId();
+                        } else {
+                            // Tạo ID ngẫu nhiên 8 chữ số để tránh trùng lặp
+                            id = String.valueOf((int) (Math.random() * 90000000) + 10000000);
+                        }
                         
                         // Lấy ID người dùng hiện tại (Giảng viên)
                         int currentUserId = prefs.getInt("userId", -1);
@@ -187,13 +205,42 @@ public class AddSubjectActivity extends AppCompatActivity {
                         Subject subject = new Subject(id, name, room, time, teacher, currentUserId, day, lesson, classCode, color);
                         
                         if (isEditMode) {
-                            DataManager.getInstance().updateSubject(subject);
-                            Toast.makeText(this, "Đã cập nhật thành công!", Toast.LENGTH_SHORT).show();
+                            DataManager.getInstance().updateSubject(subject, new DataManager.SimpleCallback() {
+                                @Override
+                                public void onSuccess() {
+                                    runOnUiThread(() -> {
+                                        Toast.makeText(AddSubjectActivity.this, "Đã cập nhật thành công!", Toast.LENGTH_SHORT).show();
+                                        finish();
+                                    });
+                                }
+
+                                @Override
+                                public void onError(String error) {
+                                    runOnUiThread(() -> {
+                                        btnSave.setEnabled(true);
+                                        Toast.makeText(AddSubjectActivity.this, "Lỗi cập nhật: " + error, Toast.LENGTH_LONG).show();
+                                    });
+                                }
+                            });
                         } else {
-                            DataManager.getInstance().addSubject(subject);
-                            Toast.makeText(this, "Đã thêm môn học thành công!", Toast.LENGTH_SHORT).show();
+                            DataManager.getInstance().addSubject(subject, new DataManager.SimpleCallback() {
+                                @Override
+                                public void onSuccess() {
+                                    runOnUiThread(() -> {
+                                        Toast.makeText(AddSubjectActivity.this, "Đã thêm môn học thành công!", Toast.LENGTH_SHORT).show();
+                                        finish();
+                                    });
+                                }
+
+                                @Override
+                                public void onError(String error) {
+                                    runOnUiThread(() -> {
+                                        btnSave.setEnabled(true);
+                                        Toast.makeText(AddSubjectActivity.this, "Lỗi thêm mới: " + error, Toast.LENGTH_LONG).show();
+                                    });
+                                }
+                            });
                         }
-                        finish();
                     })
                     .setNegativeButton("Hủy", null)
                     .show();

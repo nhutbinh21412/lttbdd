@@ -35,7 +35,7 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Subject subject = subjectList.get(position);
         holder.txtName.setText(subject.getName());
-        holder.txtClassCode.setText(subject.getClassCode() + " - " + subject.getId());
+        holder.txtClassCode.setText("Mã lớp: " + subject.getClassCode());
         
         // Cập nhật phần sidebar bên trái
         holder.txtDay.setText(subject.getDayOfWeek());

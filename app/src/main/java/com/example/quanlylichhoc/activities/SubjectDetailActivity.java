@@ -123,7 +123,7 @@ public class SubjectDetailActivity extends AppCompatActivity {
 
     private void displaySubject(Subject subject) {
         txtName.setText(subject.getName());
-        txtClassCode.setText("Mã lớp: " + subject.getClassCode() + " - " + subject.getId());
+        txtClassCode.setText("Mã lớp: " + subject.getClassCode());
         txtDay.setText("Thứ: " + subject.getDayOfWeek());
         txtLesson.setText("Tiết học: " + subject.getLesson());
         txtTime.setText("Giờ học: " + subject.getTime());

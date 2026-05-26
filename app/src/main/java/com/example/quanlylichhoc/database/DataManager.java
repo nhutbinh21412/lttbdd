@@ -76,8 +76,7 @@ public class DataManager {
         }).start();
     }
 
-    public void addSubject(Subject s) {
-        subjectList.add(s);
+    public void addSubject(Subject s, SimpleCallback callback) {
         new Thread(() -> {
             try {
                 Connection conn = SQLHelper.getConnection();
@@ -94,19 +93,23 @@ public class DataManager {
                     stmt.setString(8, s.getClassCode());
                     stmt.setInt(9, s.getColor());
                     stmt.executeUpdate();
+                    
+                    // Thêm vào list local để UI update nhanh
+                    subjectList.add(s);
+                    
+                    if (callback != null) callback.onSuccess();
                     conn.close();
+                } else {
+                    if (callback != null) callback.onError("Không thể kết nối database");
                 }
-            } catch (Exception e) { e.printStackTrace(); }
+            } catch (Exception e) {
+                e.printStackTrace();
+                if (callback != null) callback.onError(e.getMessage());
+            }
         }).start();
     }
 
-    public void updateSubject(Subject s) {
-        for (int i = 0; i < subjectList.size(); i++) {
-            if (subjectList.get(i).getId().equals(s.getId())) {
-                subjectList.set(i, s);
-                break;
-            }
-        }
+    public void updateSubject(Subject s, SimpleCallback callback) {
         new Thread(() -> {
             try {
                 Connection conn = SQLHelper.getConnection();
@@ -123,14 +126,28 @@ public class DataManager {
                     stmt.setInt(8, s.getColor());
                     stmt.setString(9, s.getId());
                     stmt.executeUpdate();
+                    
+                    // Update list local
+                    for (int i = 0; i < subjectList.size(); i++) {
+                        if (subjectList.get(i).getId().equals(s.getId())) {
+                            subjectList.set(i, s);
+                            break;
+                        }
+                    }
+                    
+                    if (callback != null) callback.onSuccess();
                     conn.close();
+                } else {
+                    if (callback != null) callback.onError("Không thể kết nối database");
                 }
-            } catch (Exception e) { e.printStackTrace(); }
+            } catch (Exception e) {
+                e.printStackTrace();
+                if (callback != null) callback.onError(e.getMessage());
+            }
         }).start();
     }
 
-    public void deleteSubject(String id) {
-        subjectList.removeIf(s -> s.getId().equals(id));
+    public void deleteSubject(String id, SimpleCallback callback) {
         new Thread(() -> {
             try {
                 Connection conn = SQLHelper.getConnection();
@@ -139,9 +156,18 @@ public class DataManager {
                     PreparedStatement stmt = conn.prepareStatement(query);
                     stmt.setString(1, id);
                     stmt.executeUpdate();
+                    
+                    subjectList.removeIf(s -> s.getId().equals(id));
+                    
+                    if (callback != null) callback.onSuccess();
                     conn.close();
+                } else {
+                    if (callback != null) callback.onError("Không thể kết nối database");
                 }
-            } catch (Exception e) { e.printStackTrace(); }
+            } catch (Exception e) {
+                e.printStackTrace();
+                if (callback != null) callback.onError(e.getMessage());
+            }
         }).start();
     }
 
