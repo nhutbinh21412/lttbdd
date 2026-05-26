@@ -1,4 +1,5 @@
-package com.example.quanlylichhoc;
+package com.example.quanlylichhoc.database;
+import com.example.quanlylichhoc.models.*;
 
 import android.content.Context;
 import java.sql.Connection;
@@ -341,6 +342,92 @@ public class DataManager {
                     PreparedStatement stmt = conn.prepareStatement(query);
                     stmt.setInt(1, studentId);
                     stmt.setString(2, subjectId);
+                    stmt.executeUpdate();
+                    callback.onSuccess();
+                    conn.close();
+                }
+            } catch (Exception e) { callback.onError(e.getMessage()); }
+        }).start();
+    }
+
+    // --- QUẢN LÝ NGƯỜI DÙNG (ADMIN) ---
+    public interface UsersCallback {
+        void onSuccess(List<User> users);
+        void onError(String error);
+    }
+
+    public void getAllUsers(UsersCallback callback) {
+        new Thread(() -> {
+            try {
+                Connection conn = SQLHelper.getConnection();
+                if (conn != null) {
+                    List<User> users = new ArrayList<>();
+                    String query = "SELECT Id, Username, Password, Role, FullName FROM Users";
+                    PreparedStatement stmt = conn.prepareStatement(query);
+                    ResultSet rs = stmt.executeQuery();
+                    while (rs.next()) {
+                        users.add(new User(
+                                rs.getInt("Id"),
+                                rs.getString("Username"),
+                                rs.getString("Password"),
+                                rs.getString("Role"),
+                                rs.getString("FullName")
+                        ));
+                    }
+                    callback.onSuccess(users);
+                    conn.close();
+                }
+            } catch (Exception e) { callback.onError(e.getMessage()); }
+        }).start();
+    }
+
+    public void addUser(User u, SimpleCallback callback) {
+        new Thread(() -> {
+            try {
+                Connection conn = SQLHelper.getConnection();
+                if (conn != null) {
+                    String query = "INSERT INTO Users (Username, Password, Role, FullName) VALUES (?, ?, ?, ?)";
+                    PreparedStatement stmt = conn.prepareStatement(query);
+                    stmt.setString(1, u.username);
+                    stmt.setString(2, u.password);
+                    stmt.setString(3, u.role);
+                    stmt.setString(4, u.fullName);
+                    stmt.executeUpdate();
+                    callback.onSuccess();
+                    conn.close();
+                }
+            } catch (Exception e) { callback.onError(e.getMessage()); }
+        }).start();
+    }
+
+    public void updateUser(User u, SimpleCallback callback) {
+        new Thread(() -> {
+            try {
+                Connection conn = SQLHelper.getConnection();
+                if (conn != null) {
+                    String query = "UPDATE Users SET Username=?, Password=?, Role=?, FullName=? WHERE Id=?";
+                    PreparedStatement stmt = conn.prepareStatement(query);
+                    stmt.setString(1, u.username);
+                    stmt.setString(2, u.password);
+                    stmt.setString(3, u.role);
+                    stmt.setString(4, u.fullName);
+                    stmt.setInt(5, u.id);
+                    stmt.executeUpdate();
+                    callback.onSuccess();
+                    conn.close();
+                }
+            } catch (Exception e) { callback.onError(e.getMessage()); }
+        }).start();
+    }
+
+    public void deleteUser(int id, SimpleCallback callback) {
+        new Thread(() -> {
+            try {
+                Connection conn = SQLHelper.getConnection();
+                if (conn != null) {
+                    String query = "DELETE FROM Users WHERE Id = ?";
+                    PreparedStatement stmt = conn.prepareStatement(query);
+                    stmt.setInt(1, id);
                     stmt.executeUpdate();
                     callback.onSuccess();
                     conn.close();

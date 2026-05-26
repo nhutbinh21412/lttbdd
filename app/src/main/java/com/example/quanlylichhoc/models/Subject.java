@@ -1,4 +1,4 @@
-package com.example.quanlylichhoc;
+package com.example.quanlylichhoc.models;
 
 import java.io.Serializable;
 

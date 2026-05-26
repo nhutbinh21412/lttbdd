@@ -1,4 +1,5 @@
-package com.example.quanlylichhoc;
+package com.example.quanlylichhoc.database;
+import com.example.quanlylichhoc.models.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -16,7 +17,7 @@ public class SQLHelper {
         String port = "1433";
         String databaseName = "QuanLyLichHocDB";
         String username = "sa"; // Tài khoản sa đã bật ở SSMS
-        String password = "123"; // Mật khẩu của tài khoản sa (Hãy đổi lại theo máy bạn)
+        String password = "123"; // Mật khẩu của tài khoản sa
 
         try {
             // Khai báo driver jTDS

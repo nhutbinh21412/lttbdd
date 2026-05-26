@@ -1,4 +1,8 @@
-package com.example.quanlylichhoc;
+package com.example.quanlylichhoc.activities;
+import com.example.quanlylichhoc.R;
+import com.example.quanlylichhoc.database.*;
+import com.example.quanlylichhoc.models.*;
+import com.example.quanlylichhoc.adapters.*;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -74,7 +78,7 @@ public class SubjectDetailActivity extends AppCompatActivity {
 
     private void loadRegisteredStudents(String subjectId) {
         LinearLayout layout = (LinearLayout) txtName.getParent();
-        
+
         TextView tvLabel = new TextView(this);
         tvLabel.setText("\nDanh sách sinh viên đăng ký:");
         tvLabel.setTypeface(null, android.graphics.Typeface.BOLD);

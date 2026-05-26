@@ -1,4 +1,8 @@
-package com.example.quanlylichhoc;
+package com.example.quanlylichhoc.activities;
+import com.example.quanlylichhoc.R;
+import com.example.quanlylichhoc.database.*;
+import com.example.quanlylichhoc.models.*;
+import com.example.quanlylichhoc.adapters.*;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -32,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
         LinearLayout btnAddSubject = findViewById(R.id.btnAddSubject);
         LinearLayout btnSearch = findViewById(R.id.btnSearch);
         LinearLayout btnRegisterSubject = findViewById(R.id.btnRegisterSubject);
+        LinearLayout btnAdminDashboard = findViewById(R.id.btnAdminDashboard);
+        TextView txtScheduleLabel = findViewById(R.id.txtScheduleLabel);
         
         CardView cardToday = findViewById(R.id.cardToday);
         TextView txtTodayStatus = findViewById(R.id.txtTodayStatus);
@@ -52,8 +58,16 @@ public class MainActivity extends AppCompatActivity {
         if (!(userRole.equalsIgnoreCase("Teacher") || userRole.equalsIgnoreCase("Lecturer"))) {
             btnAddSubject.setVisibility(View.GONE);
         } else {
-            // Nếu là Teacher thì ẩn nút "Đăng ký" (chỉ dành cho sinh viên)
+            // Nếu là Teacher thì ẩn nút "Đăng ký" (chỉ dành cho sinh viên) và đổi tên Lịch học thành Lịch dạy
             btnRegisterSubject.setVisibility(View.GONE);
+            txtScheduleLabel.setText("Lịch dạy");
+            bottomNav.getMenu().findItem(R.id.nav_schedule).setTitle("Lịch dạy");
+        }
+
+        // Quyền Admin
+        if (userRole.equalsIgnoreCase("Admin")) {
+            btnAdminDashboard.setVisibility(View.VISIBLE);
+            btnAdminDashboard.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, UserManagementActivity.class)));
         }
 
         // Tải lịch học hôm nay
@@ -61,7 +75,11 @@ public class MainActivity extends AppCompatActivity {
 
         // Xử lý sự kiện click cho các chức năng
         btnSchedule.setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, SubjectListActivity.class));
+            Intent intent = new Intent(MainActivity.this, SubjectListActivity.class);
+            String title = (userRole.equalsIgnoreCase("Teacher") || userRole.equalsIgnoreCase("Lecturer")) 
+                    ? "Lịch dạy của tôi" : "Lịch học của tôi";
+            intent.putExtra("TITLE", title);
+            startActivity(intent);
         });
 
         btnAddSubject.setOnClickListener(v -> {
@@ -82,11 +100,16 @@ public class MainActivity extends AppCompatActivity {
             if (itemId == R.id.nav_home) {
                 return true;
             } else if (itemId == R.id.nav_schedule) {
-                startActivity(new Intent(MainActivity.this, SubjectListActivity.class));
+                Intent intent = new Intent(MainActivity.this, SubjectListActivity.class);
+                String title = (userRole.equalsIgnoreCase("Teacher") || userRole.equalsIgnoreCase("Lecturer")) 
+                        ? "Lịch dạy" : "Lịch học";
+                intent.putExtra("TITLE", title);
+                startActivity(intent);
                 return true;
             } else if (itemId == R.id.nav_attendance) {
-                // Giả sử có màn hình chung hoặc danh sách môn để chọn điểm danh
-                startActivity(new Intent(MainActivity.this, SubjectListActivity.class));
+                Intent intent = new Intent(MainActivity.this, SubjectListActivity.class);
+                intent.putExtra("TITLE", "Điểm danh");
+                startActivity(intent);
                 return true;
             } else if (itemId == R.id.nav_profile) {
                 startActivity(new Intent(MainActivity.this, ProfileActivity.class));

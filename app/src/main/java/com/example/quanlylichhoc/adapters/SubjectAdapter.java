@@ -1,4 +1,6 @@
-package com.example.quanlylichhoc;
+package com.example.quanlylichhoc.adapters;
+import com.example.quanlylichhoc.R;
+import com.example.quanlylichhoc.models.*;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,12 +36,15 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
         Subject subject = subjectList.get(position);
         holder.txtName.setText(subject.getName());
         holder.txtClassCode.setText(subject.getClassCode() + " - " + subject.getId());
-        holder.txtLessonTime.setText("Tiết: " + subject.getLesson() + " | Giờ: " + subject.getTime());
+        
+        // Cập nhật phần sidebar bên trái
+        holder.txtDay.setText(subject.getDayOfWeek());
+        holder.txtLessonTime.setText(subject.getTime()); // Chỉ hiện giờ ở sidebar cho gọn
+        
         holder.txtRoom.setText("Phòng: " + subject.getRoom());
         holder.txtTeacher.setText("GV: " + subject.getTeacher());
-        holder.txtDay.setText(subject.getDayOfWeek());
         
-        // Đặt màu cho vạch bên trái
+        // Đặt màu cho vạch ngăn cách
         holder.viewColorTag.setBackgroundColor(subject.getColor());
 
         holder.itemView.setOnClickListener(v -> listener.onItemClick(subject));

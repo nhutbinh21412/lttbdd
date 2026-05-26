@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.quanlylichhoc"
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -18,11 +19,11 @@
         android:usesCleartextTraffic="true">
 
         <activity
-            android:name=".AttendanceActivity"
+            android:name="com.example.quanlylichhoc.activities.AttendanceActivity"
             android:exported="false" />
 
         <activity
-            android:name=".LoginActivity"
+            android:name="com.example.quanlylichhoc.activities.LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -31,43 +32,47 @@
         </activity>
 
         <activity
-            android:name=".RegisterActivity"
+            android:name="com.example.quanlylichhoc.activities.RegisterActivity"
             android:exported="false" />
 
         <activity
-            android:name=".MainActivity"
+            android:name="com.example.quanlylichhoc.activities.MainActivity"
             android:exported="true" />
 
         <activity
-            android:name=".SubjectListActivity"
+            android:name="com.example.quanlylichhoc.activities.SubjectListActivity"
             android:exported="false" />
 
         <activity
-            android:name=".SubjectDetailActivity"
+            android:name="com.example.quanlylichhoc.activities.SubjectDetailActivity"
             android:exported="false" />
 
         <activity
-            android:name=".AddSubjectActivity"
+            android:name="com.example.quanlylichhoc.activities.AddSubjectActivity"
             android:exported="false" />
 
         <activity
-            android:name=".SearchActivity"
+            android:name="com.example.quanlylichhoc.activities.SearchActivity"
             android:exported="false" />
 
         <activity
-            android:name=".ProfileActivity"
+            android:name="com.example.quanlylichhoc.activities.ProfileActivity"
             android:exported="true" />
 
         <activity
-            android:name=".StudentInfoActivity"
+            android:name="com.example.quanlylichhoc.activities.StudentInfoActivity"
             android:exported="false" />
 
         <activity
-            android:name=".ChangePasswordActivity"
+            android:name="com.example.quanlylichhoc.activities.ChangePasswordActivity"
             android:exported="false" />
 
         <activity
-            android:name=".SubjectRegistrationActivity"
+            android:name="com.example.quanlylichhoc.activities.SubjectRegistrationActivity"
+            android:exported="false" />
+
+        <activity
+            android:name="com.example.quanlylichhoc.activities.UserManagementActivity"
             android:exported="false" />
 
     </application>

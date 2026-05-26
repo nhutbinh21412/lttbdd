@@ -1,4 +1,4 @@
-package com.example.quanlylichhoc;
+package com.example.quanlylichhoc.models;
 
 public class AttendanceModel {
     private int studentId;

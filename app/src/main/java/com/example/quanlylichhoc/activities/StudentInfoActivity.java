@@ -1,4 +1,8 @@
-package com.example.quanlylichhoc;
+package com.example.quanlylichhoc.activities;
+import com.example.quanlylichhoc.R;
+import com.example.quanlylichhoc.database.*;
+import com.example.quanlylichhoc.models.*;
+import com.example.quanlylichhoc.adapters.*;
 
 import android.os.Bundle;
 import android.util.Log;

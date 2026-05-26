@@ -1,84 +1,124 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="4dp"
-    app:cardElevation="2dp">
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <!-- Vạch màu bên trái để phân loại (Lý thuyết/Thực hành/Thi) -->
-        <View
-            android:id="@+id/viewColorTag"
-            android:layout_width="6dp"
-            android:layout_height="match_parent"
-            android:background="#E0E0E0" />
-
+        <!-- Time Section -->
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:id="@+id/layoutTime"
+            android:layout_width="80dp"
+            android:layout_height="match_parent"
+            android:background="#F5F7FA"
+            android:gravity="center"
             android:orientation="vertical"
-            android:padding="12dp">
-
-            <TextView
-                android:id="@+id/txtSubjectName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="#1A237E" />
-
-            <TextView
-                android:id="@+id/txtClassCode"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:textSize="12sp"
-                android:textColor="#757575" />
-
-            <TextView
-                android:id="@+id/txtLessonTime"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:textSize="13sp"
-                android:layout_marginTop="4dp"
-                android:textColor="#424242"/>
-
-            <TextView
-                android:id="@+id/txtRoom"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Phòng: "
-                android:textColor="#D32F2F"
-                android:textSize="13sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/txtTeacher"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="GV: "
-                android:textSize="13sp"
-                android:layout_marginTop="2dp"
-                android:textColor="#616161" />
+            android:padding="8dp">
 
             <TextView
                 android:id="@+id/txtDay"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:text="Thứ 3"
-                android:textStyle="italic"
+                android:text="Thứ 2"
+                android:textColor="@color/primaryColor"
                 android:textSize="12sp"
-                android:textColor="#1976D2" />
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtLessonTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center"
+                android:text="07:30"
+                android:textColor="@color/textPrimary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Color Tag -->
+        <View
+            android:id="@+id/viewColorTag"
+            android:layout_width="4dp"
+            android:layout_height="match_parent"
+            android:background="@color/primaryColor" />
+
+        <!-- Info Section -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/txtSubjectName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Tên môn học"
+                android:textColor="@color/textPrimary"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/txtClassCode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Mã lớp: 24DHTT03"
+                android:textColor="@color/textGray"
+                android:textSize="13sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:src="@android:drawable/ic_menu_myplaces"
+                    app:tint="@color/red_icon" />
+
+                <TextView
+                    android:id="@+id/txtRoom"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="Phòng: A.101"
+                    android:textColor="@color/textPrimary"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="16dp"
+                    android:layout_height="0dp" />
+
+                <ImageView
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:src="@android:drawable/ic_menu_edit"
+                    app:tint="@color/blue_icon" />
+
+                <TextView
+                    android:id="@+id/txtTeacher"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="GV: Nguyễn Văn A"
+                    android:textColor="@color/textGray"
+                    android:textSize="13sp" />
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

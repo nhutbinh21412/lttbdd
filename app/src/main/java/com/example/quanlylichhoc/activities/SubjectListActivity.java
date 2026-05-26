@@ -1,4 +1,8 @@
-package com.example.quanlylichhoc;
+package com.example.quanlylichhoc.activities;
+import com.example.quanlylichhoc.R;
+import com.example.quanlylichhoc.database.*;
+import com.example.quanlylichhoc.models.*;
+import com.example.quanlylichhoc.adapters.*;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -22,8 +26,13 @@ public class SubjectListActivity extends AppCompatActivity {
         // Thiết lập Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        
+        String title = getIntent().getStringExtra("TITLE");
+        if (title != null && getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(title);
+        }
 
-        // Lấy dữ liệu từ DataManager (dùng chung toàn app)
+        // Lấy dữ liệu từ DataManager
         subjectList = DataManager.getInstance().getSubjectList();
 
         RecyclerView recyclerView = findViewById(R.id.recyclerViewSubjects);

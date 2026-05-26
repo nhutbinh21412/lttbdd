@@ -1,4 +1,6 @@
-package com.example.quanlylichhoc;
+package com.example.quanlylichhoc.adapters;
+import com.example.quanlylichhoc.R;
+import com.example.quanlylichhoc.models.*;
 
 import android.graphics.Color;
 import android.view.LayoutInflater;
@@ -47,13 +49,19 @@ public class AttendanceAdapter extends RecyclerView.Adapter<AttendanceAdapter.Vi
                 else if (checkedId == R.id.rbExcused) model.setStatus("Vắng có phép");
             });
         } else {
+            // Màn hình lịch sử cho Sinh viên
             holder.txtName.setText("Ngày: " + model.getDate());
-            holder.txtStatus.setText("Trạng thái: " + model.getStatus());
+            holder.txtStatus.setText(model.getStatus());
             holder.radioGroup.setVisibility(View.GONE);
             holder.txtStatus.setVisibility(View.VISIBLE);
             
-            if (model.getStatus().equals("Có mặt")) holder.txtStatus.setTextColor(Color.parseColor("#43A047"));
-            else if (model.getStatus().contains("Vắng")) holder.txtStatus.setTextColor(Color.parseColor("#E53935"));
+            if (model.getStatus().equals("Có mặt")) {
+                holder.txtStatus.setTextColor(Color.parseColor("#2E7D32"));
+                holder.txtStatus.setBackgroundTintList(android.content.res.ColorStateList.valueOf(Color.parseColor("#E8F5E9")));
+            } else {
+                holder.txtStatus.setTextColor(Color.parseColor("#C62828"));
+                holder.txtStatus.setBackgroundTintList(android.content.res.ColorStateList.valueOf(Color.parseColor("#FFEBEE")));
+            }
         }
     }
 
