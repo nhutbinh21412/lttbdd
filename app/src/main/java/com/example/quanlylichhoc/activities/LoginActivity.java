@@ -3,6 +3,7 @@ import com.example.quanlylichhoc.R;
 import com.example.quanlylichhoc.database.*;
 import com.example.quanlylichhoc.models.*;
 import com.example.quanlylichhoc.adapters.*;
+import com.example.quanlylichhoc.storage.SharedPrefsManager;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -25,10 +26,19 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
 
         // Khởi tạo DataManager ngay khi vào app
         DataManager.init(this);
+
+        //kiểm tra đã đăng nhập hay chưa
+        // Nếu đã có thông tin user, chuyển thẳng vào MainActivity
+        if (SharedPrefsManager.getInstance(this).getUserId() != -1) {
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
+            return;
+        }
+
+        setContentView(R.layout.activity_login);
 
         etUsername = findViewById(R.id.etUsername);
         etPassword = findViewById(R.id.etPassword);
@@ -76,13 +86,9 @@ public class LoginActivity extends AppCompatActivity {
                         String mssv = rs.getString("MSSV");
 
                         runOnUiThread(() -> {
-                            // Lưu phiên đăng nhập
-                            getSharedPreferences("UserPrefs", MODE_PRIVATE).edit()
-                                    .putInt("userId", userId)
-                                    .putString("role", role)
-                                    .putString("fullName", fullName)
-                                    .putString("mssv", mssv)
-                                    .apply();
+                            //Lưu phiên đăng nhập
+                            SharedPrefsManager.getInstance(LoginActivity.this)
+                                    .saveUser(userId, user, fullName, role, mssv);
 
                             Toast.makeText(LoginActivity.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
                             startActivity(new Intent(LoginActivity.this, MainActivity.class));

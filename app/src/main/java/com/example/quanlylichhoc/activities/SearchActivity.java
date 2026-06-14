@@ -1,8 +1,10 @@
 package com.example.quanlylichhoc.activities;
+
 import com.example.quanlylichhoc.R;
 import com.example.quanlylichhoc.database.*;
 import com.example.quanlylichhoc.models.*;
 import com.example.quanlylichhoc.adapters.*;
+import com.example.quanlylichhoc.storage.SharedPrefsManager;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,6 +13,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -35,6 +38,8 @@ public class SearchActivity extends AppCompatActivity {
         Button btnSearchAction = findViewById(R.id.btnSearchAction);
         recycleViewSearchResult = findViewById(R.id.recycleViewSearchResult);
 
+        findViewById(R.id.btnBackSearch).setOnClickListener(v -> finish());
+
         // Spinner học kỳ
         String[] semesters = {"Tất cả", "Học kỳ 1", "Học kỳ 2", "Học kỳ hè"};
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(
@@ -52,13 +57,40 @@ public class SearchActivity extends AppCompatActivity {
         });
         recycleViewSearchResult.setAdapter(adapter);
 
+        // Khôi phục từ khóa cũ từ SharedPreferences
+        String lastQuery = SharedPrefsManager.getInstance(this).getSearchDraft();
+        if (!lastQuery.isEmpty()) {
+            edtSearchSubject.setText(lastQuery);
+            performSearch();
+        }
+
+        //Nếu xoay màn hình, khôi phục từ Bundle
+        if (savedInstanceState != null) {
+            String savedText = savedInstanceState.getString("current_search");
+            if (savedText != null) edtSearchSubject.setText(savedText);
+        }
+
         btnSearchAction.setOnClickListener(v -> performSearch());
+    }
+
+    //Lưu trạng thái UI khi xoay màn hình
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("current_search", edtSearchSubject.getText().toString());
+    }
+
+    //Lưu bản nháp khi người dùng nhấn Back hoặc tạm rời màn hình
+    @Override
+    protected void onPause() {
+        super.onPause();
+        String currentQuery = edtSearchSubject.getText().toString();
+        SharedPrefsManager.getInstance(this).saveSearchDraft(currentQuery);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        // Luôn làm mới dữ liệu từ SQL để tìm kiếm chính xác
         DataManager.getInstance().loadData(null);
     }
 
@@ -69,9 +101,9 @@ public class SearchActivity extends AppCompatActivity {
         searchResults.clear();
         for (Subject subject : allSubjects) {
             boolean matchesKeyword = keyword.isEmpty()
-                    || subject.getName().toLowerCase().contains(keyword)
-                    || subject.getTeacher().toLowerCase().contains(keyword)
-                    || subject.getRoom().toLowerCase().contains(keyword);
+                    || (subject.getName() != null && subject.getName().toLowerCase().contains(keyword))
+                    || (subject.getTeacher() != null && subject.getTeacher().toLowerCase().contains(keyword))
+                    || (subject.getRoom() != null && subject.getRoom().toLowerCase().contains(keyword));
 
             if (matchesKeyword) {
                 searchResults.add(subject);
@@ -80,7 +112,7 @@ public class SearchActivity extends AppCompatActivity {
 
         adapter.notifyDataSetChanged();
 
-        if (searchResults.isEmpty()) {
+        if (searchResults.isEmpty() && !keyword.isEmpty()) {
             Toast.makeText(this, "Không tìm thấy môn học phù hợp.", Toast.LENGTH_SHORT).show();
         }
     }

@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -46,6 +47,17 @@ public class RegisterActivity extends AppCompatActivity {
                 finish(); // Quay lại màn hình Đăng nhập
             }
         });
+
+        // Khôi phục dữ liệu từ Bundle khi xoay màn hình
+        if (savedInstanceState != null) {
+            etUsername.setText(savedInstanceState.getString("temp_user"));
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("temp_user", etUsername.getText().toString());
     }
 
     private void registerUser() {

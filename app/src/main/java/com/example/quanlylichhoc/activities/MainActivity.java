@@ -1,4 +1,5 @@
 package com.example.quanlylichhoc.activities;
+
 import com.example.quanlylichhoc.R;
 import com.example.quanlylichhoc.database.*;
 import com.example.quanlylichhoc.models.*;
@@ -14,7 +15,11 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -54,17 +59,15 @@ public class MainActivity extends AppCompatActivity {
 
         txtGreeting.setText("Xin chào, " + fullName);
 
-        // Phân quyền: Nếu không phải là Giảng viên (Teacher/Lecturer) thì ẩn nút "Thêm môn"
+        // Phân quyền
         if (!(userRole.equalsIgnoreCase("Teacher") || userRole.equalsIgnoreCase("Lecturer"))) {
             btnAddSubject.setVisibility(View.GONE);
         } else {
-            // Nếu là Teacher thì ẩn nút "Đăng ký" (chỉ dành cho sinh viên) và đổi tên Lịch học thành Lịch dạy
             btnRegisterSubject.setVisibility(View.GONE);
             txtScheduleLabel.setText("Lịch dạy");
             bottomNav.getMenu().findItem(R.id.nav_schedule).setTitle("Lịch dạy");
         }
 
-        // Quyền Admin
         if (userRole.equalsIgnoreCase("Admin")) {
             btnAdminDashboard.setVisibility(View.VISIBLE);
             btnAdminDashboard.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, UserManagementActivity.class)));
@@ -72,8 +75,11 @@ public class MainActivity extends AppCompatActivity {
 
         // Tải lịch học hôm nay
         loadTodaySchedule(txtTodayStatus, cardToday);
+        
+        // Thiết lập phần Tin tức trực tiếp
+        setupNewsList();
 
-        // Xử lý sự kiện click cho các chức năng
+        // Xử lý sự kiện click
         btnSchedule.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, SubjectListActivity.class);
             String title = (userRole.equalsIgnoreCase("Teacher") || userRole.equalsIgnoreCase("Lecturer")) 
@@ -82,28 +88,17 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        btnAddSubject.setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, AddSubjectActivity.class));
-        });
-
-        btnSearch.setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, SearchActivity.class));
-        });
-
-        btnRegisterSubject.setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, SubjectRegistrationActivity.class));
-        });
+        btnAddSubject.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, AddSubjectActivity.class)));
+        btnSearch.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, SearchActivity.class)));
+        btnRegisterSubject.setOnClickListener(v -> startActivity(new Intent(MainActivity.this, SubjectRegistrationActivity.class)));
 
         // Xử lý Bottom Navigation
         bottomNav.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
-            if (itemId == R.id.nav_home) {
-                return true;
-            } else if (itemId == R.id.nav_schedule) {
+            if (itemId == R.id.nav_home) return true;
+            else if (itemId == R.id.nav_schedule) {
                 Intent intent = new Intent(MainActivity.this, SubjectListActivity.class);
-                String title = (userRole.equalsIgnoreCase("Teacher") || userRole.equalsIgnoreCase("Lecturer")) 
-                        ? "Lịch dạy" : "Lịch học";
-                intent.putExtra("TITLE", title);
+                intent.putExtra("TITLE", (userRole.equalsIgnoreCase("Teacher") || userRole.equalsIgnoreCase("Lecturer")) ? "Lịch dạy" : "Lịch học");
                 startActivity(intent);
                 return true;
             } else if (itemId == R.id.nav_attendance) {
@@ -119,6 +114,21 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void setupNewsList() {
+        RecyclerView rvNews = findViewById(R.id.rvMainNews);
+        rvNews.setLayoutManager(new LinearLayoutManager(this));
+
+        List<News> newsList = new ArrayList<>();
+        newsList.add(new News("1", "Thông báo nghỉ học ngày 15/06", "Tất cả sinh viên được nghỉ học vào ngày 15/06 do nhà trường bảo trì hệ thống điện.", "14/06/2024"));
+        newsList.add(new News("2", "Kế hoạch thi học kỳ 2", "Thời gian thi học kỳ 2 sẽ bắt đầu từ ngày 01/07/2024. Sinh viên lưu ý theo dõi lịch thi trên trang web trường.", "12/06/2024"));
+        newsList.add(new News("3", "Lễ tốt nghiệp năm 2024", "Buổi lễ tốt nghiệp sẽ được tổ chức long trọng vào sáng Thứ 7 tuần tới tại hội trường A.", "10/06/2024"));
+
+        NewsAdapter adapter = new NewsAdapter(newsList, news -> {
+            startActivity(new Intent(MainActivity.this, NewsActivity.class));
+        });
+        rvNews.setAdapter(adapter);
+    }
+
     private void loadTodaySchedule(TextView txtStatus, CardView cardToday) {
         DataManager.getInstance().loadData(new DataManager.DataCallback() {
             @Override
@@ -126,7 +136,6 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     String todayDayOfWeek = getTodayDayOfWeek();
                     Subject todaySubject = null;
-
                     for (Subject s : subjects) {
                         if (s.getDayOfWeek().equalsIgnoreCase(todayDayOfWeek)) {
                             todaySubject = s;
@@ -137,7 +146,6 @@ public class MainActivity extends AppCompatActivity {
                     if (todaySubject != null) {
                         txtStatus.setText(todaySubject.getName() + " - " + todaySubject.getTime());
                         txtStatus.setTextColor(ContextCompat.getColor(MainActivity.this, R.color.primaryColor));
-                        
                         final Subject finalSubject = todaySubject;
                         cardToday.setOnClickListener(v -> {
                             Intent intent = new Intent(MainActivity.this, SubjectDetailActivity.class);
@@ -151,13 +159,9 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
             }
-
             @Override
             public void onError(String error) {
-                runOnUiThread(() -> {
-                    txtStatus.setText("Lỗi khi tải lịch: " + error);
-                    Log.e("MainActivity", "Error loading data: " + error);
-                });
+                runOnUiThread(() -> txtStatus.setText("Lỗi khi tải lịch: " + error));
             }
         });
     }

@@ -25,7 +25,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
         etNewPassword = findViewById(R.id.etNewPassword);
         etConfirmNewPassword = findViewById(R.id.etConfirmNewPassword);
 
-        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+
 
         findViewById(R.id.btnChangePassword).setOnClickListener(v -> changePassword());
     }

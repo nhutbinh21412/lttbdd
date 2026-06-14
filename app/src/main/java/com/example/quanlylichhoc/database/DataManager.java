@@ -32,7 +32,6 @@ public class DataManager {
         return subjectList;
     }
 
-    // Interface để nhận kết quả khi load xong
     public interface DataCallback {
         void onDataLoaded(List<Subject> subjects);
         void onError(String error);
@@ -49,17 +48,27 @@ public class DataManager {
                     ResultSet rs = stmt.executeQuery();
 
                     while (rs.next()) {
+                        String start = "";
+                        String end = "";
+                        int credits = 0;
+                        try { start = rs.getString("StartDate"); } catch (Exception ignored) {}
+                        try { end = rs.getString("EndDate"); } catch (Exception ignored) {}
+                        try { credits = rs.getInt("Credits"); } catch (Exception ignored) {}
+
                         Subject subject = new Subject(
                                 rs.getString("Id"),
                                 rs.getString("Name"),
                                 rs.getString("Room"),
                                 rs.getString("Time"),
-                                rs.getString("TeacherName"), // Lấy tên giảng viên từ bảng Users
+                                rs.getString("TeacherName"),
                                 rs.getInt("TeacherId"),
                                 rs.getString("DayOfWeek"),
                                 rs.getString("Session"),
                                 rs.getString("ClassCode"),
-                                rs.getInt("Color")
+                                rs.getInt("Color"),
+                                start,
+                                end,
+                                credits
                         );
                         newList.add(subject);
                     }
@@ -81,7 +90,7 @@ public class DataManager {
             try {
                 Connection conn = SQLHelper.getConnection();
                 if (conn != null) {
-                    String query = "INSERT INTO Subjects (Id, Name, Room, Time, TeacherId, DayOfWeek, Session, ClassCode, Color) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    String query = "INSERT INTO Subjects (Id, Name, Room, Time, TeacherId, DayOfWeek, Session, ClassCode, Color, StartDate, EndDate, Credits) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     PreparedStatement stmt = conn.prepareStatement(query);
                     stmt.setString(1, s.getId());
                     stmt.setString(2, s.getName());
@@ -92,20 +101,15 @@ public class DataManager {
                     stmt.setString(7, s.getLesson());
                     stmt.setString(8, s.getClassCode());
                     stmt.setInt(9, s.getColor());
+                    stmt.setString(10, s.getStartDate());
+                    stmt.setString(11, s.getEndDate());
+                    stmt.setInt(12, s.getCredits());
                     stmt.executeUpdate();
-                    
-                    // Thêm vào list local để UI update nhanh
                     subjectList.add(s);
-                    
                     if (callback != null) callback.onSuccess();
                     conn.close();
-                } else {
-                    if (callback != null) callback.onError("Không thể kết nối database");
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-                if (callback != null) callback.onError(e.getMessage());
-            }
+            } catch (Exception e) { if (callback != null) callback.onError(e.getMessage()); }
         }).start();
     }
 
@@ -114,7 +118,7 @@ public class DataManager {
             try {
                 Connection conn = SQLHelper.getConnection();
                 if (conn != null) {
-                    String query = "UPDATE Subjects SET Name=?, Room=?, Time=?, TeacherId=?, DayOfWeek=?, Session=?, ClassCode=?, Color=? WHERE Id=?";
+                    String query = "UPDATE Subjects SET Name=?, Room=?, Time=?, TeacherId=?, DayOfWeek=?, Session=?, ClassCode=?, Color=?, StartDate=?, EndDate=?, Credits=? WHERE Id=?";
                     PreparedStatement stmt = conn.prepareStatement(query);
                     stmt.setString(1, s.getName());
                     stmt.setString(2, s.getRoom());
@@ -124,26 +128,21 @@ public class DataManager {
                     stmt.setString(6, s.getLesson());
                     stmt.setString(7, s.getClassCode());
                     stmt.setInt(8, s.getColor());
-                    stmt.setString(9, s.getId());
+                    stmt.setString(9, s.getStartDate());
+                    stmt.setString(10, s.getEndDate());
+                    stmt.setInt(11, s.getCredits());
+                    stmt.setString(12, s.getId());
                     stmt.executeUpdate();
-                    
-                    // Update list local
                     for (int i = 0; i < subjectList.size(); i++) {
                         if (subjectList.get(i).getId().equals(s.getId())) {
                             subjectList.set(i, s);
                             break;
                         }
                     }
-                    
                     if (callback != null) callback.onSuccess();
                     conn.close();
-                } else {
-                    if (callback != null) callback.onError("Không thể kết nối database");
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-                if (callback != null) callback.onError(e.getMessage());
-            }
+            } catch (Exception e) { if (callback != null) callback.onError(e.getMessage()); }
         }).start();
     }
 
@@ -156,42 +155,39 @@ public class DataManager {
                     PreparedStatement stmt = conn.prepareStatement(query);
                     stmt.setString(1, id);
                     stmt.executeUpdate();
-                    
                     subjectList.removeIf(s -> s.getId().equals(id));
-                    
                     if (callback != null) callback.onSuccess();
                     conn.close();
-                } else {
-                    if (callback != null) callback.onError("Không thể kết nối database");
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-                if (callback != null) callback.onError(e.getMessage());
-            }
+            } catch (Exception e) { if (callback != null) callback.onError(e.getMessage()); }
         }).start();
     }
 
-    // --- CÁC HÀM XỬ LÝ ĐIỂM DANH ---
     public interface AttendanceCallback {
         void onSuccess(List<AttendanceModel> list);
         void onError(String error);
     }
 
-    public void loadStudentsForSubject(String subjectId, AttendanceCallback callback) {
+    public void loadStudentsForSubject(String subjectId, int weekNumber, AttendanceCallback callback) {
         new Thread(() -> {
             try {
                 Connection conn = SQLHelper.getConnection();
                 if (conn != null) {
                     List<AttendanceModel> list = new ArrayList<>();
-                    // Lấy danh sách sinh viên đăng ký môn học này
-                    String query = "SELECT u.Id, u.FullName FROM Users u " +
+                    // Sử dụng DISTINCT hoặc GROUP BY để đảm bảo không bị lặp sinh viên
+                    String query = "SELECT u.Id, u.FullName, ISNULL(MAX(a.Status), N'Có mặt') as Status " +
+                                 "FROM Users u " +
                                  "JOIN StudentSubjects ss ON u.Id = ss.StudentId " +
-                                 "WHERE ss.SubjectId = ?";
+                                 "LEFT JOIN Attendance a ON u.Id = a.StudentId AND a.SubjectId = ss.SubjectId " +
+                                 "AND a.WeekNumber = ? " +
+                                 "WHERE ss.SubjectId = ? " +
+                                 "GROUP BY u.Id, u.FullName";
                     PreparedStatement stmt = conn.prepareStatement(query);
-                    stmt.setString(1, subjectId);
+                    stmt.setInt(1, weekNumber);
+                    stmt.setString(2, subjectId);
                     ResultSet rs = stmt.executeQuery();
                     while (rs.next()) {
-                        list.add(new AttendanceModel(rs.getInt("Id"), rs.getString("FullName"), "Có mặt", ""));
+                        list.add(new AttendanceModel(rs.getInt("Id"), rs.getString("FullName"), rs.getString("Status"), "Tuần " + weekNumber));
                     }
                     callback.onSuccess(list);
                     conn.close();
@@ -200,23 +196,32 @@ public class DataManager {
         }).start();
     }
 
-    public void saveAttendance(String subjectId, List<AttendanceModel> list) {
+    public void saveAttendance(String subjectId, int weekNumber, List<AttendanceModel> list, SimpleCallback callback) {
         new Thread(() -> {
             try {
                 Connection conn = SQLHelper.getConnection();
                 if (conn != null) {
-                    String query = "INSERT INTO Attendance (SubjectId, StudentId, Status) VALUES (?, ?, ?)";
+                    // Xóa điểm danh của tuần này trước khi lưu mới (Chống lặp)
+                    String deleteQuery = "DELETE FROM Attendance WHERE SubjectId = ? AND WeekNumber = ?";
+                    PreparedStatement delStmt = conn.prepareStatement(deleteQuery);
+                    delStmt.setString(1, subjectId);
+                    delStmt.setInt(2, weekNumber);
+                    delStmt.executeUpdate();
+
+                    String query = "INSERT INTO Attendance (SubjectId, StudentId, Status, WeekNumber) VALUES (?, ?, ?, ?)";
                     PreparedStatement stmt = conn.prepareStatement(query);
                     for (AttendanceModel item : list) {
                         stmt.setString(1, subjectId);
                         stmt.setInt(2, item.getStudentId());
                         stmt.setString(3, item.getStatus());
+                        stmt.setInt(4, weekNumber);
                         stmt.addBatch();
                     }
                     stmt.executeBatch();
                     conn.close();
+                    if (callback != null) callback.onSuccess();
                 }
-            } catch (Exception e) { e.printStackTrace(); }
+            } catch (Exception e) { if (callback != null) callback.onError(e.getMessage()); }
         }).start();
     }
 
@@ -244,8 +249,7 @@ public class DataManager {
     // --- CÁC HÀM XỬ LÝ PROFILE NGƯỜI DÙNG ---
     public static class UserProfile {
         public int id;
-        public String fullName, status, mssv, faculty, className, eduLevel, trainType, courseYear, major, specialization;
-
+        public String fullName, mssv, faculty, className, email, phone, address;
         public UserProfile() {}
     }
 
@@ -255,6 +259,10 @@ public class DataManager {
     }
 
     public void getUserProfile(int userId, ProfileCallback callback) {
+        if (userId == -1) {
+            callback.onError("User ID không hợp lệ");
+            return;
+        }
         new Thread(() -> {
             try {
                 Connection conn = SQLHelper.getConnection();
@@ -267,20 +275,26 @@ public class DataManager {
                         UserProfile profile = new UserProfile();
                         profile.id = rs.getInt("Id");
                         profile.fullName = rs.getString("FullName");
-                        profile.status = rs.getString("Status");
                         profile.mssv = rs.getString("MSSV");
                         profile.faculty = rs.getString("Faculty");
                         profile.className = rs.getString("ClassName");
-                        profile.eduLevel = rs.getString("EducationLevel");
-                        profile.trainType = rs.getString("TrainingType");
-                        profile.courseYear = rs.getString("CourseYear");
-                        profile.major = rs.getString("Major");
-                        profile.specialization = rs.getString("Specialization");
+                        
+                        try { profile.email = rs.getString("Email"); } catch (Exception e) { profile.email = ""; }
+                        try { profile.phone = rs.getString("Phone"); } catch (Exception e) { profile.phone = ""; }
+                        try { profile.address = rs.getString("Address"); } catch (Exception e) { profile.address = ""; }
+                        
                         callback.onSuccess(profile);
+                    } else {
+                        callback.onError("Không tìm thấy thông tin người dùng");
                     }
                     conn.close();
+                } else {
+                    callback.onError("Không thể kết nối đến máy chủ");
                 }
-            } catch (Exception e) { callback.onError(e.getMessage()); }
+            } catch (Exception e) { 
+                e.printStackTrace();
+                callback.onError("Lỗi truy vấn: " + e.getMessage()); 
+            }
         }).start();
     }
 
@@ -289,19 +303,16 @@ public class DataManager {
             try {
                 Connection conn = SQLHelper.getConnection();
                 if (conn != null) {
-                    String query = "UPDATE Users SET FullName=?, Status=?, MSSV=?, Faculty=?, ClassName=?, EducationLevel=?, TrainingType=?, CourseYear=?, Major=?, Specialization=? WHERE Id=?";
+                    String query = "UPDATE Users SET FullName=?, MSSV=?, Faculty=?, ClassName=?, Email=?, Phone=?, Address=? WHERE Id=?";
                     PreparedStatement stmt = conn.prepareStatement(query);
                     stmt.setString(1, p.fullName);
-                    stmt.setString(2, p.status);
-                    stmt.setString(3, p.mssv);
-                    stmt.setString(4, p.faculty);
-                    stmt.setString(5, p.className);
-                    stmt.setString(6, p.eduLevel);
-                    stmt.setString(7, p.trainType);
-                    stmt.setString(8, p.courseYear);
-                    stmt.setString(9, p.major);
-                    stmt.setString(10, p.specialization);
-                    stmt.setInt(11, p.id);
+                    stmt.setString(2, p.mssv);
+                    stmt.setString(3, p.faculty);
+                    stmt.setString(4, p.className);
+                    stmt.setString(5, p.email);
+                    stmt.setString(6, p.phone);
+                    stmt.setString(7, p.address);
+                    stmt.setInt(8, p.id);
                     stmt.executeUpdate();
                     callback.onSuccess(p);
                     conn.close();
@@ -315,35 +326,25 @@ public class DataManager {
             try {
                 Connection conn = SQLHelper.getConnection();
                 if (conn != null) {
-                    // Kiểm tra mật khẩu cũ
                     String checkQuery = "SELECT * FROM Users WHERE Id = ? AND Password = ?";
                     PreparedStatement checkStmt = conn.prepareStatement(checkQuery);
                     checkStmt.setInt(1, userId);
                     checkStmt.setString(2, currentPassword);
                     ResultSet rs = checkStmt.executeQuery();
-
                     if (rs.next()) {
-                        // Cập nhật mật khẩu mới
                         String updateQuery = "UPDATE Users SET Password = ? WHERE Id = ?";
                         PreparedStatement updateStmt = conn.prepareStatement(updateQuery);
                         updateStmt.setString(1, newPassword);
                         updateStmt.setInt(2, userId);
                         updateStmt.executeUpdate();
                         callback.onSuccess(null);
-                    } else {
-                        callback.onError("Mật khẩu hiện tại không chính xác");
-                    }
+                    } else { callback.onError("Mật khẩu hiện tại không chính xác"); }
                     conn.close();
-                } else {
-                    callback.onError("Không thể kết nối database");
                 }
-            } catch (Exception e) {
-                callback.onError(e.getMessage());
-            }
+            } catch (Exception e) { callback.onError(e.getMessage()); }
         }).start();
     }
 
-    // --- ĐĂNG KÝ MÔN HỌC ---
     public interface SimpleCallback {
         void onSuccess();
         void onError(String error);
@@ -354,16 +355,6 @@ public class DataManager {
             try {
                 Connection conn = SQLHelper.getConnection();
                 if (conn != null) {
-                    // Kiểm tra xem đã đăng ký chưa
-                    String check = "SELECT * FROM StudentSubjects WHERE StudentId = ? AND SubjectId = ?";
-                    PreparedStatement checkStmt = conn.prepareStatement(check);
-                    checkStmt.setInt(1, studentId);
-                    checkStmt.setString(2, subjectId);
-                    if (checkStmt.executeQuery().next()) {
-                        callback.onError("Bạn đã đăng ký môn học này rồi");
-                        return;
-                    }
-
                     String query = "INSERT INTO StudentSubjects (StudentId, SubjectId) VALUES (?, ?)";
                     PreparedStatement stmt = conn.prepareStatement(query);
                     stmt.setInt(1, studentId);
@@ -376,7 +367,6 @@ public class DataManager {
         }).start();
     }
 
-    // --- QUẢN LÝ NGƯỜI DÙNG (ADMIN) ---
     public interface UsersCallback {
         void onSuccess(List<User> users);
         void onError(String error);
@@ -392,13 +382,7 @@ public class DataManager {
                     PreparedStatement stmt = conn.prepareStatement(query);
                     ResultSet rs = stmt.executeQuery();
                     while (rs.next()) {
-                        users.add(new User(
-                                rs.getInt("Id"),
-                                rs.getString("Username"),
-                                rs.getString("Password"),
-                                rs.getString("Role"),
-                                rs.getString("FullName")
-                        ));
+                        users.add(new User(rs.getInt("Id"), rs.getString("Username"), rs.getString("Password"), rs.getString("Role"), rs.getString("FullName")));
                     }
                     callback.onSuccess(users);
                     conn.close();
@@ -459,6 +443,82 @@ public class DataManager {
                     conn.close();
                 }
             } catch (Exception e) { callback.onError(e.getMessage()); }
+        }).start();
+    }
+
+    // --- CÁC HÀM XỬ LÝ TIN TỨC (NEWS) ---
+    public interface NewsCallback {
+        void onSuccess(List<News> newsList);
+        void onError(String error);
+    }
+
+    public void getAllNews(NewsCallback callback) {
+        new Thread(() -> {
+            try {
+                Connection conn = SQLHelper.getConnection();
+                if (conn != null) {
+                    List<News> list = new ArrayList<>();
+                    String query = "SELECT Id, Title, Content, CONVERT(VARCHAR, DatePosted, 103) as DateStr FROM News ORDER BY DatePosted DESC";
+                    PreparedStatement stmt = conn.prepareStatement(query);
+                    ResultSet rs = stmt.executeQuery();
+                    while (rs.next()) {
+                        list.add(new News(rs.getString("Id"), rs.getString("Title"), rs.getString("Content"), rs.getString("DateStr")));
+                    }
+                    callback.onSuccess(list);
+                    conn.close();
+                }
+            } catch (Exception e) { callback.onError(e.getMessage()); }
+        }).start();
+    }
+
+    public void addNews(News n, SimpleCallback callback) {
+        new Thread(() -> {
+            try {
+                Connection conn = SQLHelper.getConnection();
+                if (conn != null) {
+                    String query = "INSERT INTO News (Title, Content) VALUES (?, ?)";
+                    PreparedStatement stmt = conn.prepareStatement(query);
+                    stmt.setString(1, n.getTitle());
+                    stmt.setString(2, n.getContent());
+                    stmt.executeUpdate();
+                    if (callback != null) callback.onSuccess();
+                    conn.close();
+                }
+            } catch (Exception e) { if (callback != null) callback.onError(e.getMessage()); }
+        }).start();
+    }
+
+    public void updateNews(News n, SimpleCallback callback) {
+        new Thread(() -> {
+            try {
+                Connection conn = SQLHelper.getConnection();
+                if (conn != null) {
+                    String query = "UPDATE News SET Title=?, Content=? WHERE Id=?";
+                    PreparedStatement stmt = conn.prepareStatement(query);
+                    stmt.setString(1, n.getTitle());
+                    stmt.setString(2, n.getContent());
+                    stmt.setInt(3, Integer.parseInt(n.getId()));
+                    stmt.executeUpdate();
+                    if (callback != null) callback.onSuccess();
+                    conn.close();
+                }
+            } catch (Exception e) { if (callback != null) callback.onError(e.getMessage()); }
+        }).start();
+    }
+
+    public void deleteNews(String id, SimpleCallback callback) {
+        new Thread(() -> {
+            try {
+                Connection conn = SQLHelper.getConnection();
+                if (conn != null) {
+                    String query = "DELETE FROM News WHERE Id = ?";
+                    PreparedStatement stmt = conn.prepareStatement(query);
+                    stmt.setInt(1, Integer.parseInt(id));
+                    stmt.executeUpdate();
+                    if (callback != null) callback.onSuccess();
+                    conn.close();
+                }
+            } catch (Exception e) { if (callback != null) callback.onError(e.getMessage()); }
         }).start();
     }
 }

@@ -7,17 +7,18 @@ import com.example.quanlylichhoc.adapters.*;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
+import androidx.annotation.NonNull;
+import com.example.quanlylichhoc.storage.SharedPrefsManager;
+
 public class StudentInfoActivity extends AppCompatActivity {
 
     private EditText etFullName;
-    private View rowStatus, rowMSSV, rowFaculty, rowClass, rowEduLevel, rowTrainType, rowCourse, rowMajor, rowSpecialization;
+    private View rowMSSV, rowFaculty, rowClass, rowEmail, rowPhone, rowAddress;
     private int userId;
 
     @Override
@@ -25,33 +26,50 @@ public class StudentInfoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_student_info);
 
-        userId = getSharedPreferences("UserPrefs", MODE_PRIVATE).getInt("userId", -1);
+        // Sử dụng SharedPrefsManager để lấy userId
+        userId = SharedPrefsManager.getInstance(this).getUserId();
+        
+        if (userId == -1) {
+            Toast.makeText(this, "Bạn chưa đăng nhập!", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
         etFullName = findViewById(R.id.etFullName);
-        rowStatus = findViewById(R.id.rowStatus);
         rowMSSV = findViewById(R.id.rowMSSV);
         rowFaculty = findViewById(R.id.rowFaculty);
         rowClass = findViewById(R.id.rowClass);
-        rowEduLevel = findViewById(R.id.rowEduLevel);
-        rowTrainType = findViewById(R.id.rowTrainType);
-        rowCourse = findViewById(R.id.rowCourse);
-        rowMajor = findViewById(R.id.rowMajor);
-        rowSpecialization = findViewById(R.id.rowSpecialization);
+        rowEmail = findViewById(R.id.rowEmail);
+        rowPhone = findViewById(R.id.rowPhone);
+        rowAddress = findViewById(R.id.rowAddress);
 
-        initRow(rowStatus, "Trạng thái");
         initRow(rowMSSV, "MSSV");
         initRow(rowFaculty, "Khoa");
         initRow(rowClass, "Lớp");
-        initRow(rowEduLevel, "Bậc đào tạo");
-        initRow(rowTrainType, "Loại hình đào tạo");
-        initRow(rowCourse, "Khóa học");
-        initRow(rowMajor, "Ngành");
-        initRow(rowSpecialization, "Chuyên ngành");
+        initRow(rowEmail, "Email");
+        initRow(rowPhone, "Số điện thoại");
+        initRow(rowAddress, "Địa chỉ");
 
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
         findViewById(R.id.btnSave).setOnClickListener(v -> saveProfile());
 
         loadProfile();
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("saved_name", etFullName.getText().toString());
+        outState.putString("saved_email", getRowValue(rowEmail));
+        outState.putString("saved_phone", getRowValue(rowPhone));
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        etFullName.setText(savedInstanceState.getString("saved_name"));
+        setRowValue(rowEmail, savedInstanceState.getString("saved_email"));
+        setRowValue(rowPhone, savedInstanceState.getString("saved_phone"));
     }
 
     private void initRow(View row, String label) {
@@ -75,15 +93,12 @@ public class StudentInfoActivity extends AppCompatActivity {
             public void onSuccess(DataManager.UserProfile profile) {
                 runOnUiThread(() -> {
                     etFullName.setText(profile.fullName);
-                    setRowValue(rowStatus, profile.status);
                     setRowValue(rowMSSV, profile.mssv);
                     setRowValue(rowFaculty, profile.faculty);
                     setRowValue(rowClass, profile.className);
-                    setRowValue(rowEduLevel, profile.eduLevel);
-                    setRowValue(rowTrainType, profile.trainType);
-                    setRowValue(rowCourse, profile.courseYear);
-                    setRowValue(rowMajor, profile.major);
-                    setRowValue(rowSpecialization, profile.specialization);
+                    setRowValue(rowEmail, profile.email);
+                    setRowValue(rowPhone, profile.phone);
+                    setRowValue(rowAddress, profile.address);
                 });
             }
 
@@ -98,15 +113,12 @@ public class StudentInfoActivity extends AppCompatActivity {
         DataManager.UserProfile p = new DataManager.UserProfile();
         p.id = userId;
         p.fullName = etFullName.getText().toString().trim();
-        p.status = getRowValue(rowStatus);
         p.mssv = getRowValue(rowMSSV);
         p.faculty = getRowValue(rowFaculty);
         p.className = getRowValue(rowClass);
-        p.eduLevel = getRowValue(rowEduLevel);
-        p.trainType = getRowValue(rowTrainType);
-        p.courseYear = getRowValue(rowCourse);
-        p.major = getRowValue(rowMajor);
-        p.specialization = getRowValue(rowSpecialization);
+        p.email = getRowValue(rowEmail);
+        p.phone = getRowValue(rowPhone);
+        p.address = getRowValue(rowAddress);
 
         DataManager.getInstance().updateUserProfile(p, new DataManager.ProfileCallback() {
             @Override
@@ -114,7 +126,6 @@ public class StudentInfoActivity extends AppCompatActivity {
                 Log.d("StudentInfo", "Update success for user: " + profile.id);
                 runOnUiThread(() -> {
                     Toast.makeText(StudentInfoActivity.this, "Đã lưu thông tin!", Toast.LENGTH_SHORT).show();
-                    // Cập nhật lại FullName và MSSV trong SharedPreferences để các màn hình khác hiển thị đúng
                     getSharedPreferences("UserPrefs", MODE_PRIVATE).edit()
                             .putString("fullName", p.fullName)
                             .putString("mssv", p.mssv)

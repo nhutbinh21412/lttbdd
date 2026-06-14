@@ -31,7 +31,7 @@ public class SubjectRegistrationActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+
 
         loadAvailableSubjects();
     }

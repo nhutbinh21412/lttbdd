@@ -31,8 +31,20 @@ public class SubjectDetailActivity extends AppCompatActivity {
         txtTime = findViewById(R.id.detailTime);
         txtRoom = findViewById(R.id.detailRoom);
         txtTeacher = findViewById(R.id.detailTeacher);
-        Button btnBack = findViewById(R.id.btnBack);
+
         Button btnEdit = findViewById(R.id.btnEdit);
+
+        // Kiểm tra an toàn cho nút Back Header
+        View btnBackHeader = findViewById(R.id.btnBackHeader);
+        if (btnBackHeader != null) {
+            btnBackHeader.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
+        }
+        
+        // Kiểm tra an toàn cho nút Back cũ nếu còn tồn tại
+        View btnBack = findViewById(R.id.btnBack);
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
+        }
 
         // Lấy dữ liệu ban đầu
         Subject subject = (Subject) getIntent().getSerializableExtra("SUBJECT_DATA");
@@ -41,16 +53,18 @@ public class SubjectDetailActivity extends AppCompatActivity {
             displaySubject(subject);
         }
 
-        btnBack.setOnClickListener(v -> finish());
+        
 
-        btnEdit.setOnClickListener(v -> {
-            Subject currentSubject = findSubjectById(subjectId);
-            if (currentSubject != null) {
-                Intent intent = new Intent(this, AddSubjectActivity.class);
-                intent.putExtra("EDIT_SUBJECT", currentSubject);
-                startActivity(intent);
-            }
-        });
+        if (btnEdit != null) {
+            btnEdit.setOnClickListener(v -> {
+                Subject currentSubject = findSubjectById(subjectId);
+                if (currentSubject != null) {
+                    Intent intent = new Intent(this, AddSubjectActivity.class);
+                    intent.putExtra("EDIT_SUBJECT", currentSubject);
+                    startActivity(intent);
+                }
+            });
+        }
 
         // Nút Điểm danh
         Button btnAttendance = new Button(this);
@@ -64,7 +78,7 @@ public class SubjectDetailActivity extends AppCompatActivity {
             intent.putExtra("SUBJECT_ID", subjectId);
             startActivity(intent);
         });
-        
+
         // Phân quyền: Sinh viên có thể xem điểm danh, Giảng viên có thể thực hiện điểm danh
         // Hiện tại nút này được thêm vào layout cho cả hai vai trò.
 
@@ -85,7 +99,8 @@ public class SubjectDetailActivity extends AppCompatActivity {
         tvLabel.setTextColor(android.graphics.Color.BLACK);
         layout.addView(tvLabel);
 
-        DataManager.getInstance().loadStudentsForSubject(subjectId, new DataManager.AttendanceCallback() {
+        // Truyền thêm số tuần
+        DataManager.getInstance().loadStudentsForSubject(subjectId, 1, new DataManager.AttendanceCallback() {
             @Override
             public void onSuccess(List<AttendanceModel> list) {
                 runOnUiThread(() -> {
@@ -129,6 +144,21 @@ public class SubjectDetailActivity extends AppCompatActivity {
         txtTime.setText("Giờ học: " + subject.getTime());
         txtRoom.setText("Phòng học: " + subject.getRoom());
         txtTeacher.setText("Giảng viên: " + subject.getTeacher());
+        
+        // Thêm hiển thị tín chỉ và thời gian học
+        LinearLayout layout = (LinearLayout) txtName.getParent();
+        
+        // Xóa thông tin cũ nếu có (tránh lặp khi onResume)
+        View oldInfo = layout.findViewWithTag("more_info_tag");
+        if (oldInfo != null) layout.removeView(oldInfo);
+
+        TextView tvMoreInfo = new TextView(this);
+        tvMoreInfo.setTag("more_info_tag");
+        tvMoreInfo.setText(String.format(java.util.Locale.getDefault(),
+            "\nSố tín chỉ: %d\nThời gian: %s đến %s",
+            subject.getCredits(), subject.getStartDate(), subject.getEndDate()));
+        tvMoreInfo.setTextColor(android.graphics.Color.GRAY);
+        layout.addView(tvMoreInfo);
     }
 
     private Subject findSubjectById(String id) {

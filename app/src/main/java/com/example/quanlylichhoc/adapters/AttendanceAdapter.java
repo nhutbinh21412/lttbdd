@@ -38,11 +38,16 @@ public class AttendanceAdapter extends RecyclerView.Adapter<AttendanceAdapter.Vi
             holder.radioGroup.setVisibility(View.VISIBLE);
             holder.txtStatus.setVisibility(View.GONE);
             
+            // Tắt listener trước khi đặt trạng thái để tránh lỗi vòng lặp
+            holder.radioGroup.setOnCheckedChangeListener(null);
+            
             // Đặt đúng trạng thái ban đầu cho radio buttons
             if (model.getStatus().equals("Có mặt")) holder.radioGroup.check(R.id.rbPresent);
             else if (model.getStatus().equals("Vắng")) holder.radioGroup.check(R.id.rbAbsent);
             else if (model.getStatus().equals("Vắng có phép")) holder.radioGroup.check(R.id.rbExcused);
+            else holder.radioGroup.clearCheck();
 
+            // Gắn lại listener sau khi đã set view thành công
             holder.radioGroup.setOnCheckedChangeListener((group, checkedId) -> {
                 if (checkedId == R.id.rbPresent) model.setStatus("Có mặt");
                 else if (checkedId == R.id.rbAbsent) model.setStatus("Vắng");

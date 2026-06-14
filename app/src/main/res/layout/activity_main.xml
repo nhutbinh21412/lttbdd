@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:background="@color/backgroundColor">
 
-    <!-- HD Header Background with Gradient-like solid -->
+
     <View
         android:id="@+id/headerBackground"
         android:layout_width="match_parent"
@@ -13,7 +13,7 @@
         android:background="@color/primaryColor"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Sharp Profile Section -->
+
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/imgProfile"
         android:layout_width="56dp"
@@ -49,13 +49,13 @@
         android:layout_width="36dp"
         android:layout_height="36dp"
         android:layout_marginEnd="20dp"
-        android:src="@android:drawable/ic_popup_reminder"
+
         app:layout_constraintBottom_toBottomOf="@id/imgProfile"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/imgProfile"
         app:tint="@color/white" />
 
-    <!-- High Definition Schedule Card -->
+
     <androidx.cardview.widget.CardView
         android:id="@+id/cardToday"
         android:layout_width="match_parent"
@@ -136,7 +136,7 @@
 
             </RelativeLayout>
 
-            <!-- Ultra Sharp Function Grid -->
+
             <GridLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -349,14 +349,12 @@
                 android:textSize="22sp"
                 android:textStyle="bold" />
 
-             <androidx.cardview.widget.CardView
+             <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvMainNews"
                 android:layout_width="match_parent"
-                android:layout_height="120dp"
-                android:layout_marginBottom="24dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp">
-                 <View android:layout_width="match_parent" android:layout_height="match_parent" android:background="@color/white"/>
-             </androidx.cardview.widget.CardView>
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                android:layout_marginBottom="24dp" />
 
         </LinearLayout>
     </ScrollView>

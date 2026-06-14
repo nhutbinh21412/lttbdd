@@ -11,11 +11,15 @@ public class Subject implements Serializable {
     private String lesson;
     private String classCode;
     private int color;
-    private int teacherId; // Lưu ID của Giảng viên quản lý
-    private String teacher; // Tên giảng viên
+    private int teacherId;
+    private String teacher;
+    private String startDate;
+    private String endDate;
+    private int credits;
 
     public Subject(String id, String name, String room, String time, String teacher, int teacherId, 
-                   String dayOfWeek, String lesson, String classCode, int color) {
+                   String dayOfWeek, String lesson, String classCode, int color, 
+                   String startDate, String endDate, int credits) {
         this.id = id;
         this.name = name;
         this.room = room;
@@ -26,6 +30,9 @@ public class Subject implements Serializable {
         this.lesson = lesson;
         this.classCode = classCode;
         this.color = color;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.credits = credits;
     }
 
     public String getId() { return id; }
@@ -38,6 +45,9 @@ public class Subject implements Serializable {
     public String getLesson() { return lesson; }
     public String getClassCode() { return classCode; }
     public int getColor() { return color; }
+    public String getStartDate() { return startDate; }
+    public String getEndDate() { return endDate; }
+    public int getCredits() { return credits; }
 
     public void setTeacher(String teacher) { this.teacher = teacher; }
 }
