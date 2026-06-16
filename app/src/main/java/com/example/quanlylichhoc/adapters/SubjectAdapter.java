@@ -12,7 +12,13 @@ import java.util.List;
 
 public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHolder> {
     private List<Subject> subjectList;
+    private java.util.Set<String> conflictIds = new java.util.HashSet<>();
     private OnItemClickListener listener;
+
+    public void setConflictIds(java.util.Set<String> ids) {
+        this.conflictIds = ids;
+        notifyDataSetChanged();
+    }
 
     public interface OnItemClickListener {
         void onItemClick(Subject subject);
@@ -46,6 +52,13 @@ public class SubjectAdapter extends RecyclerView.Adapter<SubjectAdapter.ViewHold
         
         // Đặt màu cho vạch ngăn cách
         holder.viewColorTag.setBackgroundColor(subject.getColor());
+
+        // Highlight màu đỏ nếu bị trùng lịch
+        if (conflictIds.contains(subject.getId())) {
+            holder.itemView.setBackgroundColor(android.graphics.Color.parseColor("#FFEBEE")); // Màu đỏ rất nhạt
+        } else {
+            holder.itemView.setBackgroundColor(android.graphics.Color.WHITE);
+        }
 
         holder.itemView.setOnClickListener(v -> listener.onItemClick(subject));
     }

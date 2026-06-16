@@ -38,13 +38,33 @@ public class DataManager {
     }
 
     public void loadData(DataCallback callback) {
+        loadDataForUser(-1, "Admin", callback);
+    }
+
+    public void loadDataForUser(int userId, String role, DataCallback callback) {
         new Thread(() -> {
             try {
                 Connection conn = SQLHelper.getConnection();
                 if (conn != null) {
                     List<Subject> newList = new ArrayList<>();
-                    String query = "SELECT s.*, u.FullName as TeacherName FROM Subjects s LEFT JOIN Users u ON s.TeacherId = u.Id";
+                    String query;
+                    if (role.equals("Teacher")) {
+                        query = "SELECT DISTINCT s.*, u.FullName as TeacherName FROM Subjects s " +
+                                "LEFT JOIN Users u ON s.TeacherId = u.Id WHERE s.TeacherId = ?";
+                    } else if (role.equals("Student")) {
+                        query = "SELECT DISTINCT s.*, u.FullName as TeacherName FROM Subjects s " +
+                                "JOIN StudentSubjects ss ON s.Id = ss.SubjectId " +
+                                "LEFT JOIN Users u ON s.TeacherId = u.Id WHERE ss.StudentId = ?";
+                    } else {
+                        query = "SELECT DISTINCT s.*, u.FullName as TeacherName FROM Subjects s " +
+                                "LEFT JOIN Users u ON s.TeacherId = u.Id";
+                    }
+
                     PreparedStatement stmt = conn.prepareStatement(query);
+                    if (!role.equals("Admin") && userId != -1) {
+                        stmt.setInt(1, userId);
+                    }
+
                     ResultSet rs = stmt.executeQuery();
 
                     while (rs.next()) {
@@ -90,6 +110,39 @@ public class DataManager {
             try {
                 Connection conn = SQLHelper.getConnection();
                 if (conn != null) {
+                    // Kiểm tra trùng lịch trực tiếp trong DB
+                    String checkRoomQuery = "SELECT TOP 1 Name FROM Subjects WHERE DayOfWeek = ? AND Session = ? " +
+                            "AND ((StartDate <= ? AND EndDate >= ?)) " +
+                            "AND Room = ?";
+                    PreparedStatement roomStmt = conn.prepareStatement(checkRoomQuery);
+                    roomStmt.setString(1, s.getDayOfWeek());
+                    roomStmt.setString(2, s.getLesson());
+                    roomStmt.setString(3, s.getEndDate());
+                    roomStmt.setString(4, s.getStartDate());
+                    roomStmt.setString(5, s.getRoom());
+                    ResultSet rsRoom = roomStmt.executeQuery();
+                    if (rsRoom.next()) {
+                        callback.onError("Phòng " + s.getRoom() + " đã có môn " + rsRoom.getString("Name") + " sử dụng!");
+                        conn.close();
+                        return;
+                    }
+
+                    String checkTeacherQuery = "SELECT TOP 1 Name FROM Subjects WHERE DayOfWeek = ? AND Session = ? " +
+                            "AND ((StartDate <= ? AND EndDate >= ?)) " +
+                            "AND TeacherId = ?";
+                    PreparedStatement teacherStmt = conn.prepareStatement(checkTeacherQuery);
+                    teacherStmt.setString(1, s.getDayOfWeek());
+                    teacherStmt.setString(2, s.getLesson());
+                    teacherStmt.setString(3, s.getEndDate());
+                    teacherStmt.setString(4, s.getStartDate());
+                    teacherStmt.setInt(5, s.getTeacherId());
+                    ResultSet rsTeacher = teacherStmt.executeQuery();
+                    if (rsTeacher.next()) {
+                        callback.onError("Giảng viên đã có lịch dạy môn " + rsTeacher.getString("Name") + " vào lúc này!");
+                        conn.close();
+                        return;
+                    }
+
                     String query = "INSERT INTO Subjects (Id, Name, Room, Time, TeacherId, DayOfWeek, Session, ClassCode, Color, StartDate, EndDate, Credits) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     PreparedStatement stmt = conn.prepareStatement(query);
                     stmt.setString(1, s.getId());
@@ -118,6 +171,41 @@ public class DataManager {
             try {
                 Connection conn = SQLHelper.getConnection();
                 if (conn != null) {
+                    // Kiểm tra trùng lịch trực tiếp trong DB (trừ môn hiện tại)
+                    String checkRoomQuery = "SELECT TOP 1 Name FROM Subjects WHERE DayOfWeek = ? AND Session = ? AND Id <> ? " +
+                            "AND ((StartDate <= ? AND EndDate >= ?)) " +
+                            "AND Room = ?";
+                    PreparedStatement roomStmt = conn.prepareStatement(checkRoomQuery);
+                    roomStmt.setString(1, s.getDayOfWeek());
+                    roomStmt.setString(2, s.getLesson());
+                    roomStmt.setString(3, s.getId());
+                    roomStmt.setString(4, s.getEndDate());
+                    roomStmt.setString(5, s.getStartDate());
+                    roomStmt.setString(6, s.getRoom());
+                    ResultSet rsRoom = roomStmt.executeQuery();
+                    if (rsRoom.next()) {
+                        callback.onError("Phòng " + s.getRoom() + " đã có môn " + rsRoom.getString("Name") + " sử dụng!");
+                        conn.close();
+                        return;
+                    }
+
+                    String checkTeacherQuery = "SELECT TOP 1 Name FROM Subjects WHERE DayOfWeek = ? AND Session = ? AND Id <> ? " +
+                            "AND ((StartDate <= ? AND EndDate >= ?)) " +
+                            "AND TeacherId = ?";
+                    PreparedStatement teacherStmt = conn.prepareStatement(checkTeacherQuery);
+                    teacherStmt.setString(1, s.getDayOfWeek());
+                    teacherStmt.setString(2, s.getLesson());
+                    teacherStmt.setString(3, s.getId());
+                    teacherStmt.setString(4, s.getEndDate());
+                    teacherStmt.setString(5, s.getStartDate());
+                    teacherStmt.setInt(6, s.getTeacherId());
+                    ResultSet rsTeacher = teacherStmt.executeQuery();
+                    if (rsTeacher.next()) {
+                        callback.onError("Giảng viên đã có lịch dạy môn " + rsTeacher.getString("Name") + " vào lúc này!");
+                        conn.close();
+                        return;
+                    }
+
                     String query = "UPDATE Subjects SET Name=?, Room=?, Time=?, TeacherId=?, DayOfWeek=?, Session=?, ClassCode=?, Color=?, StartDate=?, EndDate=?, Credits=? WHERE Id=?";
                     PreparedStatement stmt = conn.prepareStatement(query);
                     stmt.setString(1, s.getName());
@@ -355,6 +443,42 @@ public class DataManager {
             try {
                 Connection conn = SQLHelper.getConnection();
                 if (conn != null) {
+                    // 1. Lấy thông tin môn học đang muốn đăng ký
+                    String getSubQuery = "SELECT * FROM Subjects WHERE Id = ?";
+                    PreparedStatement getSubStmt = conn.prepareStatement(getSubQuery);
+                    getSubStmt.setString(1, subjectId);
+                    ResultSet rsNew = getSubStmt.executeQuery();
+                    if (!rsNew.next()) {
+                        callback.onError("Không tìm thấy môn học");
+                        conn.close();
+                        return;
+                    }
+                    String day = rsNew.getString("DayOfWeek");
+                    String session = rsNew.getString("Session");
+                    String start = rsNew.getString("StartDate");
+                    String end = rsNew.getString("EndDate");
+
+                    // 2. Kiểm tra trùng lịch với các môn đã đăng ký của sinh viên này
+                    String checkQuery = "SELECT s.Name FROM Subjects s " +
+                            "JOIN StudentSubjects ss ON s.Id = ss.SubjectId " +
+                            "WHERE ss.StudentId = ? AND s.DayOfWeek = ? AND s.Session = ? " +
+                            "AND ((s.StartDate <= ? AND s.EndDate >= ?))";
+                    PreparedStatement checkStmt = conn.prepareStatement(checkQuery);
+                    checkStmt.setInt(1, studentId);
+                    checkStmt.setString(2, day);
+                    checkStmt.setString(3, session);
+                    checkStmt.setString(4, end);
+                    checkStmt.setString(5, start);
+
+                    ResultSet rsCheck = checkStmt.executeQuery();
+                    if (rsCheck.next()) {
+                        String conflictName = rsCheck.getString("Name");
+                        callback.onError("Trùng lịch với môn đã đăng ký: " + conflictName);
+                        conn.close();
+                        return;
+                    }
+
+                    // 3. Nếu không trùng thì mới cho đăng ký
                     String query = "INSERT INTO StudentSubjects (StudentId, SubjectId) VALUES (?, ?)";
                     PreparedStatement stmt = conn.prepareStatement(query);
                     stmt.setInt(1, studentId);
@@ -364,6 +488,27 @@ public class DataManager {
                     conn.close();
                 }
             } catch (Exception e) { callback.onError(e.getMessage()); }
+        }).start();
+    }
+
+    public void unregisterSubject(int studentId, String subjectId, SimpleCallback callback) {
+        new Thread(() -> {
+            try {
+                Connection conn = SQLHelper.getConnection();
+                if (conn != null) {
+                    String query = "DELETE FROM StudentSubjects WHERE StudentId = ? AND SubjectId = ?";
+                    PreparedStatement stmt = conn.prepareStatement(query);
+                    stmt.setInt(1, studentId);
+                    stmt.setString(2, subjectId);
+                    int rows = stmt.executeUpdate();
+                    if (rows > 0) {
+                        if (callback != null) callback.onSuccess();
+                    } else {
+                        if (callback != null) callback.onError("Không tìm thấy bản ghi đăng ký");
+                    }
+                    conn.close();
+                }
+            } catch (Exception e) { if (callback != null) callback.onError(e.getMessage()); }
         }).start();
     }
 

@@ -10,8 +10,6 @@ public class SQLHelper {
         Connection conn = null;
 
         // 1. Cấu hình IP máy tính chứa SQL Server
-        // Nếu bạn chạy bằng GIẢ LẬP của Android Studio: dùng IP đặc biệt "10.0.2.2"
-        // Nếu bạn chạy bằng ĐIỆN THOẠI THẬT: Cắm chung Wifi với máy tính và nhập IP của máy tính (VD: "192.168.1.5")
         String ip = "10.0.2.2";
 
         String port = "1433";
@@ -23,7 +21,6 @@ public class SQLHelper {
             // Khai báo driver jTDS
             Class.forName("net.sourceforge.jtds.jdbc.Driver");
 
-            // Chuỗi kết nối đặc biệt dành cho SQL Server Express
             String connectionUrl = "jdbc:jtds:sqlserver://" + ip + ":" + port + "/" + databaseName + ";user=" + username + ";password=" + password + ";";
 
             conn = DriverManager.getConnection(connectionUrl);

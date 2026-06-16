@@ -79,12 +79,50 @@ public class SubjectDetailActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        // Nút Hủy đăng ký (Dành cho Sinh viên để chỉnh sửa khi trùng lịch)
+        android.content.SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        String role = prefs.getString("role", "Student");
+        int userId = prefs.getInt("userId", -1);
+
+        if (role.equalsIgnoreCase("Student")) {
+            Button btnUnregister = new Button(this);
+            btnUnregister.setText("Hủy đăng ký môn học");
+            btnUnregister.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#F44336")));
+            btnUnregister.setTextColor(android.graphics.Color.WHITE);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            params.setMargins(0, 20, 0, 0);
+            btnUnregister.setLayoutParams(params);
+            ((android.widget.LinearLayout)txtName.getParent()).addView(btnUnregister);
+
+            btnUnregister.setOnClickListener(v -> {
+                new androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setTitle("Xác nhận hủy")
+                    .setMessage("Bạn có chắc chắn muốn hủy đăng ký môn học này?")
+                    .setPositiveButton("Hủy đăng ký", (dialog, which) -> {
+                        DataManager.getInstance().unregisterSubject(userId, subjectId, new DataManager.SimpleCallback() {
+                            @Override
+                            public void onSuccess() {
+                                runOnUiThread(() -> {
+                                    Toast.makeText(SubjectDetailActivity.this, "Đã hủy đăng ký!", Toast.LENGTH_SHORT).show();
+                                    finish();
+                                });
+                            }
+                            @Override
+                            public void onError(String error) {
+                                runOnUiThread(() -> Toast.makeText(SubjectDetailActivity.this, "Lỗi: " + error, Toast.LENGTH_SHORT).show());
+                            }
+                        });
+                    })
+                    .setNegativeButton("Quay lại", null)
+                    .show();
+            });
+        }
+
         // Phân quyền: Sinh viên có thể xem điểm danh, Giảng viên có thể thực hiện điểm danh
         // Hiện tại nút này được thêm vào layout cho cả hai vai trò.
 
         // Hiển thị danh sách sinh viên đăng ký nếu là Teacher
-        android.content.SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-        String role = prefs.getString("role", "Student");
         if (role.equalsIgnoreCase("Teacher") || role.equalsIgnoreCase("Lecturer")) {
             loadRegisteredStudents(subjectId);
         }
